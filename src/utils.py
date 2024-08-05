@@ -11,6 +11,7 @@ class PIMCSingleParticle1DNonRel:
         a (float): Temporal lattice spacing.
         N (int): Number of temporal slices.
         m (float): Mass of the particle.
+        T (float): Total evolution time of the system (N*a).
     """
 
     def __init__(self, V: Callable, a: float, N: int, m: float=1.0):
@@ -19,14 +20,16 @@ class PIMCSingleParticle1DNonRel:
             V (Callable[float, float]): The potential characterizing the system.
             a (float): Temporal lattice spacing.
             N (int): Number of temporal slices.
-            m (float, optional): Mass of the particle. Default is $1.0$.        
+            m (float, optional): Mass of the particle. Default is $1.0$.
         """
         self.V = V
         self.a = a
         self.N = N
         self.m = m
         
-        self.A = (m/(2*np.pi*a))**(N/2) # Normalization factor of path integral in single particle non-relativistic 1 dimensional case
+        self._A = (m/(2*np.pi*a))**(N/2) # Normalization factor of path integral in single particle non-relativistic 1 dimensional case
+        self.T = a*N
+
 
     def S_lat(self, path: np.ndarray):
         """
@@ -46,7 +49,7 @@ class PIMCSingleParticle1DNonRel:
         def integrand(path_var: np.ndarray):
             path = np.insert(path_var, 0, x)
             path = np.append(path, x)
-            return self.A * np.exp(-self.S_lat(path))
+            return self._A * np.exp(-self.S_lat(path))
         return integrand
     
 
@@ -56,8 +59,8 @@ class PIMCSingleParticle1DNonRel:
 
         Args:
             x (float): Argument of the propagator.
-            lower_bound (float, optional): Lower integration bound for each variable in the path. Default $5.0$.
-            upper_bound (float, optional): Upper integration bound for each variable in the path. Default $-5.0$.
+            lower_bound (float, optional): Lower integration bound for each variable in the path. Default $-5.0$.
+            upper_bound (float, optional): Upper integration bound for each variable in the path. Default $5.0$.
             nitn_tot (int): Total number of iterations of `vegas` algorithm to estimate the integral.
             nitn_discarded (int): Number of iterations of `vegas` algorithm to be discarded at the beginning, to let `vegas` adapt to the integrand without polluting the error analysis.
             neval (int): Number of Monte Carlo evaluations of the integral in each iteration of `vegas` algorithm.
@@ -71,5 +74,14 @@ class PIMCSingleParticle1DNonRel:
         result = integrator(self._integrand_factory(x), nitn=nitn_tot-nitn_discarded, neval=neval)
         return result
     
-    def get_T(self):
-        return self.N * self.a
+
+    def _update(self, path: np.ndarray, N: int, eps: float):
+        for j in range(0,N):
+            old_x = path[j] # save original value
+            old_Sj = S(j,path)
+            path[j] = path[j] + np.random.uniform(-eps,eps) # update x[j]
+            dS = self.S(j,path) - old_Sj # change in action
+            if dS > 0 and np.exp(-dS) < np.random.uniform(0,1):
+                path[j] = old_x # restore old value
+
+    
