@@ -1,9 +1,9 @@
 
 
-from typing import Callable
+from typing import Callable, List
 import numpy as np
 import vegas
-from ..numerical.pimc import metropolis
+
 
 class NonRelativisticSingleParticle1D:
     """
@@ -31,7 +31,14 @@ class NonRelativisticSingleParticle1D:
         self.T = T
         self.m = m
         self.N = N
-        self.a = T / N
+        
+    @property
+    def a(self):
+        return self.T / self.N
+
+    @property
+    def _A(self): # Normalization constant of path integral
+        return (self.m/(2*np.pi*self.a))**(self.N/2)
 
 
     def S_lat(self, path: np.ndarray) -> float:
@@ -58,12 +65,12 @@ class NonRelativisticSingleParticle1D:
         return integrand
     
 
-    def compute_propagator_pimc(self, x: float, lower_bound=-5.0, upper_bound=5.0, nitn_tot=30, nitn_discarded=10, neval=2500) -> vegas.RAvg:
+    def compute_propagator_pimc(self, x: np.ndarray | float, lower_bound=-5.0, upper_bound=5.0, nitn_tot=30, nitn_discarded=20, neval=2500) -> vegas.RAvg | List[vegas.RAvg]:
         """
         Computes the propagator $\\bra{x} e^{-\\hat{H}T} \\ket{x}$ through the discretized path integral formula, using the `vegas` library, which implements the Monte Carlo estimation of multidimensional integrals. See section 2.1 of Lepage's "Lattice QCD for novices" paper for more information.
 
         Args:
-            x (float): Argument of the propagator.
+            x (float | np.ndarray): Argument of the propagator (or array of arguments).
             lower_bound (float, optional): Lower integration bound for each variable in the path. Default $-5.0$.
             upper_bound (float, optional): Upper integration bound for each variable in the path. Default $5.0$.
             nitn_tot (int): Total number of iterations of `vegas` algorithm to estimate the integral.
@@ -72,13 +79,24 @@ class NonRelativisticSingleParticle1D:
 
         Returns:
             vegas.RAvg: The `vegas` result of the integration procedure. See https://vegas.readthedocs.io/en/latest/vegas.html#vegas.RAvg
+            List[vegas.RAvg]: The list of results for each separate integrand.
         """
-        # TODO: extend for x: np.ndarray
+        # TODO: see if another level of abstraction can be inserted, which handles the setup of vegas integration
         domain = [[lower_bound, upper_bound]]*(self.N-1)
-        integrator = vegas.Integrator(domain)
-        integrator(self._integrand_factory(x), nitn=nitn_discarded, neval=neval)
-        result = integrator(self._integrand_factory(x), nitn=nitn_tot-nitn_discarded, neval=neval)
-        return result
+        results = []
+        if not isinstance(x, np.ndarray):
+            x = np.array([x])
+        results = []
+        for x_i in x:
+            integrator = vegas.Integrator(domain)
+            f = self._integrand_factory(x_i)
+            integrator(f, nitn=nitn_discarded, neval=neval)
+            result = integrator(f, nitn=nitn_tot-nitn_discarded, neval=neval)
+            results.append(result)
+        if len(results) == 1:
+            return results[0]
+        else:
+            return results
     
 
     def compute_propagator_from_ground_state(self, x: np.ndarray, ground_wavefunction: Callable | None = None, ground_energy: float | None = None) -> np.ndarray:
@@ -90,4 +108,8 @@ class NonRelativisticSingleParticle1D:
         $$\\bra{x} e^{-\\hat{H}T} \\ket{x} \\approx e^{-E_0 T} {\\lvert\\braket{x | E_0}\\rvert}^2 $$
 
         """
-        raise NotImplementedError()
+        if (ground_wavefunction is None) or (ground_energy is None):
+            # TODO: call Schrodinger solver procedure
+            raise NotImplementedError()
+        assert (ground_wavefunction is not None) and (ground_energy is not None)
+        return ground_wavefunction(x)**2 * np.exp(-ground_energy*self.T)
