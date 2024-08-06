@@ -20,7 +20,6 @@ class NonRelativisticSingleParticle1D:
         T (float): Total evolution time of the system.
         N (int): Number of temporal lattice points for lattice calculations.
         box (Tuple[float, float]): Extremal spatial points `(x_min, x_max)` for the particle box (set to high value for infinite box).
-        a (float): Temporal interval spacing for lattice calculations.
     """
 
     def __init__(self, V: Callable, T: float, m: float=1.0, N: int=100, box: Tuple=(-100.0, 100.0)):
@@ -38,9 +37,12 @@ class NonRelativisticSingleParticle1D:
         self.N = N
         self.box = np.array(list(box))
 
-        
+
     @property
     def a(self):
+        """
+        Temporal interval spacing for lattice calculations.
+        """
         return self.T / self.N
 
     @property
@@ -62,7 +64,7 @@ class NonRelativisticSingleParticle1D:
         for j in range(self.N):
             S += self.m/(2*self.a)*(path[j+1] - path[j])**2 + self.a*self.V(path[j])
         return S
-    
+
 
     def _integrand_factory(self, x: float) -> Callable:
         def integrand(path_var: np.ndarray):
@@ -70,7 +72,7 @@ class NonRelativisticSingleParticle1D:
             path = np.append(path, x)
             return self._A * np.exp(-self.S_lat(path))
         return integrand
-    
+
 
     def compute_propagator_pimc(self, x: np.ndarray | float, lower_bound=-5.0, upper_bound=5.0, nitn_tot=30, nitn_discarded=10, neval=2500) -> vegas.RAvg | List[vegas.RAvg]:
         """
@@ -104,14 +106,14 @@ class NonRelativisticSingleParticle1D:
             return results[0]
         else:
             return results
-    
+
 
     def compute_propagator_from_ground_state(self, x: np.ndarray, ground_wavefunction: Callable | None = None, ground_energy: float | None = None) -> np.ndarray:
         """
         Computes the values of the propagator $\\bra{x} e^{-\\hat{H}T} \\ket{x}$
-        
+
         in the approximation of large $T$, using the formula:
-        
+
         $$\\bra{x} e^{-\\hat{H}T} \\ket{x} \\approx e^{-E_0 T} {\\lvert\\braket{x | E_0}\\rvert}^2 $$
 
         """
@@ -132,7 +134,7 @@ class NonRelativisticSingleParticle1D:
     def solve_schrodinger(self, N: int, max_states: int) -> Eigenstates:
         """
         Solves the Schrodinger equation using the `qmsolve` library.
-        
+
         Args:
             N (int): Resolution (number of points) of the solution array.
             max_states (int): Number of eigenstates to compute.
@@ -148,8 +150,3 @@ class NonRelativisticSingleParticle1D:
         eigenstates = H.solve(max_states)
         eigenstates.energies = eigenstates.energies / ENERGY_HARTREE_EV
         return eigenstates
-    
-
-
-
-    

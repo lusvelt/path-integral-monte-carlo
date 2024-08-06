@@ -12,8 +12,8 @@ def get_linspace_idxs_within(x_arr: np.ndarray, x_min: float) -> np.ndarray:
         numpy.ndarray[int]: numpy.arange of indices of the elements of `x_arr` within `numpy.linspace(x_min, x_max, ...)` having elements spaced as in `x_arr`.
     """
     diff = np.diff(x_arr)
-    assert np.all(np.where(diff == diff[0]))
-    dx = np.diff[0]
+    assert np.all(np.isclose(diff, diff[0]))
+    dx = diff[0]
     idx_start = int(np.round((x_arr[0] - x_min) / dx))
     idx_end = int(np.round((x_arr[-1] - x_min) / dx))
     return np.arange(idx_start, idx_end + 1)
@@ -30,5 +30,7 @@ def get_extended_linspace_size(x_arr: np.ndarray, extent: float) -> int:
     Returns
         int: Size of extended linspace
     """
+    diff = np.diff(x_arr)
+    assert np.all(np.isclose(diff, diff[0]))
     x_range = x_arr[-1] - x_arr[0]
     return int(np.round((x_arr.shape[0] - 1) / x_range * extent)) + 1
