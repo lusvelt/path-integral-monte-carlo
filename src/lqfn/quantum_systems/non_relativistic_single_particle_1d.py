@@ -1,8 +1,11 @@
 
 
-from typing import Callable, List
+from typing import Callable, List, Tuple
 import numpy as np
+from qmsolve import Hamiltonian, SingleParticle
+from qmsolve.eigenstates import Eigenstates
 import vegas
+from ..numerical import utils
 
 
 class NonRelativisticSingleParticle1D:
@@ -16,21 +19,25 @@ class NonRelativisticSingleParticle1D:
         m (float): Mass of the particle.
         T (float): Total evolution time of the system.
         N (int): Number of temporal lattice points for lattice calculations.
+        box (Tuple[float, float]): Extremal spatial points `(x_min, x_max)` for the particle box (set to high value for infinite box).
         a (float): Temporal interval spacing for lattice calculations.
     """
 
-    def __init__(self, V: Callable, T: float, m: float=1.0, N: int = 100):
+    def __init__(self, V: Callable, T: float, m: float=1.0, N: int=100, box: Tuple=(-100.0, 100.0)):
         """
         Args:
             V (Callable[float, float]): The potential characterizing the system.
             T (float): Total evolution time of the system.
             m (float, optional): Mass of the particle. Default is $1.0$.
             N (int): Number of temporal lattice points for lattice calculations.
+            box (Tuple[float, float]): Extremal spatial points `(x_min, x_max)` for the particle box (set to high value w.r.t. characteristic length scale of the system for infinite box).
         """
         self.V = V
         self.T = T
         self.m = m
         self.N = N
+        self.box = np.array(list(box))
+
         
     @property
     def a(self):
@@ -65,7 +72,7 @@ class NonRelativisticSingleParticle1D:
         return integrand
     
 
-    def compute_propagator_pimc(self, x: np.ndarray | float, lower_bound=-5.0, upper_bound=5.0, nitn_tot=30, nitn_discarded=20, neval=2500) -> vegas.RAvg | List[vegas.RAvg]:
+    def compute_propagator_pimc(self, x: np.ndarray | float, lower_bound=-5.0, upper_bound=5.0, nitn_tot=30, nitn_discarded=10, neval=2500) -> vegas.RAvg | List[vegas.RAvg]:
         """
         Computes the propagator $\\bra{x} e^{-\\hat{H}T} \\ket{x}$ through the discretized path integral formula, using the `vegas` library, which implements the Monte Carlo estimation of multidimensional integrals. See section 2.1 of Lepage's "Lattice QCD for novices" paper for more information.
 
@@ -81,7 +88,7 @@ class NonRelativisticSingleParticle1D:
             vegas.RAvg: The `vegas` result of the integration procedure. See https://vegas.readthedocs.io/en/latest/vegas.html#vegas.RAvg
             List[vegas.RAvg]: The list of results for each separate integrand.
         """
-        # TODO: see if another level of abstraction can be inserted, which handles the setup of vegas integration
+        # TODO: see if another level of abstraction should be inserted, which handles the setup of vegas integration
         domain = [[lower_bound, upper_bound]]*(self.N-1)
         results = []
         if not isinstance(x, np.ndarray):
@@ -109,7 +116,40 @@ class NonRelativisticSingleParticle1D:
 
         """
         if (ground_wavefunction is None) or (ground_energy is None):
-            # TODO: call Schrodinger solver procedure
-            raise NotImplementedError()
+            sym_box_half = np.max(np.abs(self.box))
+            schrodinger_N = utils.get_extended_linspace_size(x, extent=2*sym_box_half)
+            eigenstates = self.solve_schrodinger(N=schrodinger_N, max_states=1)
+            ground_wavefunction = eigenstates.array[0]
+            ground_energy = eigenstates.energies[0]
+            idxs = utils.get_linspace_idxs_within(x, x_min=-sym_box_half)
+        else:
+            ground_wavefunction = ground_wavefunction(x)
+            idxs = np.arange(x.shape[0])
         assert (ground_wavefunction is not None) and (ground_energy is not None)
-        return ground_wavefunction(x)**2 * np.exp(-ground_energy*self.T)
+        return ground_wavefunction[idxs]**2 * np.exp(-ground_energy*self.T)
+
+
+    def solve_schrodinger(self, N: int, max_states: int) -> Eigenstates:
+        """
+        Solves the Schrodinger equation using the `qmsolve` library.
+        
+        Args:
+            N (int): Resolution (number of points) of the solution array.
+            max_states (int): Number of eigenstates to compute.
+
+        Returns:
+            qmsolve.eigenstates.Eigenstates: Object containing the eigenstates (`Eigenstates.array`) and energy levels (`Eigenstates.energies`) in atomic units.
+        """
+        ENERGY_HARTREE_EV = 27.211386245988
+        particle = SingleParticle(m=self.m)
+        def potential(particle):
+            return self.V(particle.x)
+        H = Hamiltonian(particle, potential, N, extent=2*np.max(self.box), spatial_ndim=1)
+        eigenstates = H.solve(max_states)
+        eigenstates.energies = eigenstates.energies / ENERGY_HARTREE_EV
+        return eigenstates
+    
+
+
+
+    
