@@ -89,8 +89,8 @@ def export_env(from_history:bool=False, no_builds:bool=False, env_name:str='base
     copied from the gist I found online. Link above, in module docstring'''
 
     cmd = ['conda', 'env', 'export']
-    cmd.append('--name')
-    cmd.append(env_name)
+    #cmd.append('--name')
+    #cmd.append(env_name)
     if from_history:
         cmd.append('--from-history')
         if no_builds:

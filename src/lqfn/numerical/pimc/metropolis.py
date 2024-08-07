@@ -34,16 +34,16 @@ def compute_path_integral_average(functional: Callable, S_per_component: Callabl
         numpy.ndarray[float, N]: Path integral average of the functional.
         numpy.ndarray[float, N]: Standard deviation error associated to each instant of time in the path integral average.
     """
-    functional_samples = np.zeros((N_cf, N))                                      
+    functional_samples = np.zeros((N_cf, N))
     path = np.zeros(N)
-    for j in range(N): 
-        path[j] = 0                               
+    for j in range(N):
+        path[j] = 0
     for j in range(thermalization_its*N_cor):   # thermalization
         _update_path(path, S_per_component, eps)
-    for rows in range(N_cf):                     
+    for rows in range(N_cf):
         for j in range(N_cor):   # discard N_cor values
             _update_path(path, S_per_component, eps)
-        for n in range(N):                    
+        for n in range(N):
             functional_samples[rows][n] = functional(path, n)   # for every time instant we have N_cf values of G
     avg = functional_samples.mean(axis=0)
     std = functional_samples.std(axis=0) / np.sqrt(N_cf)
