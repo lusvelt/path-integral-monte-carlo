@@ -1,6 +1,6 @@
 import os
 import subprocess
-from .environment import import_environment, export_environment
+from .docs import build_docs
 
 root_dir = os.getcwd()
 hooks_dir = os.path.join(root_dir, '.git', 'hooks')
@@ -17,10 +17,5 @@ def install_hooks():
     print('post-update installed at .git\hooks\post-update')
 
 
-def pre_commit_custom_hook():
-    export_environment()
-    os.system('git add .')
-
-
 def post_update_hook():
-    import_environment()
+    build_docs()

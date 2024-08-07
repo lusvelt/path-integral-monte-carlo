@@ -83,14 +83,12 @@ def CLI() -> argparse.Namespace:
     args = parser.parse_args()
     return args
 
-def export_env(from_history:bool=False, no_builds:bool=False, env_name:str='base') -> dict[str, Union[str,list,dict]]:
+def export_env(from_history:bool=False, no_builds:bool=False) -> dict[str, Union[str,list,dict]]:
     '''Run the command `conda env export` plus additional flags
     and get the output from the terminal. This function is mostly
     copied from the gist I found online. Link above, in module docstring'''
 
     cmd = ['conda', 'env', 'export']
-    #cmd.append('--name')
-    #cmd.append(env_name)
     if from_history:
         cmd.append('--from-history')
         if no_builds:
@@ -266,16 +264,16 @@ def main(args):
     env_name     :str  = args.env_name
     output_file  :str  = args.output
 
-    full_env_output = export_env(from_history=False, no_builds=no_builds, env_name=env_name)
+    full_env_output = export_env(from_history=False, no_builds=no_builds)
 
     #-- Maintain default conda env export functionality
     if not from_history:
-        final_env_dict = export_env(from_history=False, no_builds=no_builds, env_name=env_name)
+        final_env_dict = export_env(from_history=False, no_builds=no_builds)
         #produce_output(output_file, full_env_output, verbose=verbose)
         #return
 
     elif from_history and not use_versions:  #return the standard --from-history response
-        final_env_dict = export_env(from_history=True, env_name=env_name)  #from history
+        final_env_dict = export_env(from_history=True)  #from history
         final_env_dict['channels'] = full_env_output['channels']
 
         _pip_section = get_pip_section(full_env_output['dependencies'])
@@ -287,8 +285,8 @@ def main(args):
 
     elif from_history and use_versions:
         #-- Create merged list of dependencies
-        full_env_output:dict = export_env(from_history=False, no_builds=False, env_name=env_name)
-        hist_env_output:dict = export_env(from_history=True, env_name=env_name)
+        full_env_output:dict = export_env(from_history=False, no_builds=False)
+        hist_env_output:dict = export_env(from_history=True)
         _merged_dependencies:list = merge_dependencies(full_env_output, hist_env_output, use_versions)
 
         #-- setup final env dictionary
