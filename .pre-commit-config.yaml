@@ -16,3 +16,4 @@ repos:
         entry: python scripts.py pre-commit-custom-hook
         args: []
         language: python
+        additional_dependencies: [pyyaml]
