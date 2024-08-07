@@ -1,4 +1,6 @@
-
+"""
+This module contains code for modelling non-relativistic single particle 1-dimensional quantum systems.
+"""
 
 from typing import Callable, List, Tuple
 import numpy as np
@@ -22,7 +24,14 @@ class NonRelativisticSingleParticle1D:
         box (Tuple[float, float]): Extremal spatial points `(x_min, x_max)` for the particle box (set to high value for infinite box).
     """
 
-    def __init__(self, V: Callable, T: float, m: float=1.0, N: int=100, box: Tuple=(-100.0, 100.0)):
+    def __init__(
+        self,
+        V: Callable,
+        T: float,
+        m: float = 1.0,
+        N: int = 100,
+        box: Tuple = (-100.0, 100.0),
+    ):
         """
         Args:
             V (Callable[float, float]): The potential characterizing the system.
@@ -37,7 +46,6 @@ class NonRelativisticSingleParticle1D:
         self.N = N
         self.box = np.array(list(box))
 
-
     @property
     def a(self):
         """
@@ -46,9 +54,8 @@ class NonRelativisticSingleParticle1D:
         return self.T / self.N
 
     @property
-    def _A(self): # Normalization constant of path integral
-        return (self.m/(2*np.pi*self.a))**(self.N/2)
-
+    def _A(self):  # Normalization constant of path integral
+        return (self.m / (2 * np.pi * self.a)) ** (self.N / 2)
 
     def S_lat(self, path: np.ndarray) -> float:
         """
@@ -62,19 +69,28 @@ class NonRelativisticSingleParticle1D:
         """
         S = 0
         for j in range(self.N):
-            S += self.m/(2*self.a)*(path[j+1] - path[j])**2 + self.a*self.V(path[j])
+            S += self.m / (2 * self.a) * (path[j + 1] - path[j]) ** 2 + self.a * self.V(
+                path[j]
+            )
         return S
-
 
     def _integrand_factory(self, x: float) -> Callable:
         def integrand(path_var: np.ndarray):
             path = np.insert(path_var, 0, x)
             path = np.append(path, x)
             return self._A * np.exp(-self.S_lat(path))
+
         return integrand
 
-
-    def compute_propagator_pimc(self, x: np.ndarray | float, lower_bound=-5.0, upper_bound=5.0, nitn_tot=30, nitn_discarded=10, neval=2500) -> vegas.RAvg | List[vegas.RAvg]:
+    def compute_propagator_pimc(
+        self,
+        x: np.ndarray | float,
+        lower_bound=-5.0,
+        upper_bound=5.0,
+        nitn_tot=30,
+        nitn_discarded=10,
+        neval=2500,
+    ) -> vegas.RAvg | List[vegas.RAvg]:
         """
         Computes the propagator $\\bra{x} e^{-\\hat{H}T} \\ket{x}$ through the discretized path integral formula, using the `vegas` library, which implements the Monte Carlo estimation of multidimensional integrals. See section 2.1 of Lepage's "Lattice QCD for novices" paper for more information.
 
@@ -91,7 +107,7 @@ class NonRelativisticSingleParticle1D:
             List[vegas.RAvg]: The list of results for each separate integrand.
         """
         # TODO: see if another level of abstraction should be inserted, which handles the setup of vegas integration
-        domain = [[lower_bound, upper_bound]]*(self.N-1)
+        domain = [[lower_bound, upper_bound]] * (self.N - 1)
         results = []
         if not isinstance(x, np.ndarray):
             x = np.array([x])
@@ -100,15 +116,19 @@ class NonRelativisticSingleParticle1D:
             integrator = vegas.Integrator(domain)
             f = self._integrand_factory(x_i)
             integrator(f, nitn=nitn_discarded, neval=neval)
-            result = integrator(f, nitn=nitn_tot-nitn_discarded, neval=neval)
+            result = integrator(f, nitn=nitn_tot - nitn_discarded, neval=neval)
             results.append(result)
         if len(results) == 1:
             return results[0]
         else:
             return results
 
-
-    def compute_propagator_from_ground_state(self, x: np.ndarray, ground_wavefunction: Callable | None = None, ground_energy: float | None = None) -> np.ndarray:
+    def compute_propagator_from_ground_state(
+        self,
+        x: np.ndarray,
+        ground_wavefunction: Callable | None = None,
+        ground_energy: float | None = None,
+    ) -> np.ndarray:
         """
         Computes the values of the propagator $\\bra{x} e^{-\\hat{H}T} \\ket{x}$
 
@@ -119,7 +139,7 @@ class NonRelativisticSingleParticle1D:
         """
         if (ground_wavefunction is None) or (ground_energy is None):
             sym_box_half = np.max(np.abs(self.box))
-            schrodinger_N = utils.get_extended_linspace_size(x, extent=2*sym_box_half)
+            schrodinger_N = utils.get_extended_linspace_size(x, extent=2 * sym_box_half)
             eigenstates = self.solve_schrodinger(N=schrodinger_N, max_states=1)
             ground_wavefunction = eigenstates.array[0]
             ground_energy = eigenstates.energies[0]
@@ -128,8 +148,7 @@ class NonRelativisticSingleParticle1D:
             ground_wavefunction = ground_wavefunction(x)
             idxs = np.arange(x.shape[0])
         assert (ground_wavefunction is not None) and (ground_energy is not None)
-        return ground_wavefunction[idxs]**2 * np.exp(-ground_energy*self.T)
-
+        return ground_wavefunction[idxs] ** 2 * np.exp(-1 * ground_energy * self.T)
 
     def solve_schrodinger(self, N: int, max_states: int) -> Eigenstates:
         """
@@ -144,9 +163,13 @@ class NonRelativisticSingleParticle1D:
         """
         ENERGY_HARTREE_EV = 27.211386245988
         particle = SingleParticle(m=self.m)
+
         def potential(particle):
             return self.V(particle.x)
-        H = Hamiltonian(particle, potential, N, extent=2*np.max(self.box), spatial_ndim=1)
+
+        H = Hamiltonian(
+            particle, potential, N, extent=2 * np.max(self.box), spatial_ndim=1
+        )
         eigenstates = H.solve(max_states)
         eigenstates.energies = eigenstates.energies / ENERGY_HARTREE_EV
         return eigenstates

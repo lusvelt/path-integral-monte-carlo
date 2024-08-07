@@ -1,4 +1,9 @@
+"""
+This is a utility module that provides some useful functions.
+"""
+
 import numpy as np
+
 
 def get_linspace_idxs_within(x_arr: np.ndarray, x_min: float) -> np.ndarray:
     """

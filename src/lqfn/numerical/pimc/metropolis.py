@@ -1,3 +1,7 @@
+"""
+This module provides functions to compute path integrals using Metropolis Monte Carlo method (explained in section 2.3 of Lepage's paper "Lattice QCD for Novices")
+"""
+
 from typing import Callable
 import numpy as np
 
@@ -5,15 +9,23 @@ import numpy as np
 def _update_path(path, S, eps):
     N = path.shape[0]
     for j in range(N):
-        old_x = path[j] # save original value
+        old_x = path[j]  # save original value
         old_Sj = S(j, path)
-        path[j] = path[j] + np.random.uniform(-eps, eps) # update path[j]
-        dS = S(j, path) - old_Sj # change in action
+        path[j] = path[j] + np.random.uniform(-eps, eps)  # update path[j]
+        dS = S(j, path) - old_Sj  # change in action
         if dS > 0 and np.exp(-dS) < np.random.uniform(0, 1):
-            path[j] = old_x # restore old value
+            path[j] = old_x  # restore old value
 
 
-def compute_path_integral_average(functional: Callable, S_per_component: Callable, N: int, N_cf: int, N_cor: int, eps: float, thermalization_its: int=5):
+def compute_path_integral_average(
+    functional: Callable,
+    S_per_component: Callable,
+    N: int,
+    N_cf: int,
+    N_cor: int,
+    eps: float,
+    thermalization_its: int = 5,
+):
     """
     Computes the path integral average
 
@@ -38,13 +50,15 @@ def compute_path_integral_average(functional: Callable, S_per_component: Callabl
     path = np.zeros(N)
     for j in range(N):
         path[j] = 0
-    for j in range(thermalization_its*N_cor):   # thermalization
+    for j in range(thermalization_its * N_cor):  # thermalization
         _update_path(path, S_per_component, eps)
     for rows in range(N_cf):
-        for j in range(N_cor):   # discard N_cor values
+        for j in range(N_cor):  # discard N_cor values
             _update_path(path, S_per_component, eps)
         for n in range(N):
-            functional_samples[rows][n] = functional(path, n)   # for every time instant we have N_cf values of G
+            functional_samples[rows][n] = functional(
+                path, n
+            )  # for every time instant we have N_cf values of G
     avg = functional_samples.mean(axis=0)
     std = functional_samples.std(axis=0) / np.sqrt(N_cf)
     return avg, std

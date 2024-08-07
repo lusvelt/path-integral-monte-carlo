@@ -1,9 +1,9 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='lqfn',
-    version='0.1',
-    packages=find_packages(where='src'),
-    package_dir={'': 'src'},
-    install_requires=['vegas', 'numpy', 'scipy', 'qmsolve', 'matplotlib'],
+    name="lqfn",
+    version="0.1",
+    packages=find_packages(where="src"),
+    package_dir={"": "src"},
+    install_requires=["vegas", "numpy", "scipy", "qmsolve", "matplotlib"],
 )
