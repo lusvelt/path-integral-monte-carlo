@@ -10,10 +10,9 @@ This projects aims at reproducing Lepage's analysis doing the exercises in the p
 
 ### Installation
 To run this project, [Anaconda](https://www.anaconda.com/) is needed, with python 3 installed.
-With python installed (such as in the `base` environment of Anaconda), run `python install.py`.
-This will create a new Anaconda environment `lqfn`, and install everything that is needed to run this project.
-At the end of the installation, run `conda activate lqfn` to activate the newly installed environment.
-The installation process also installs git hooks to perform automated tasks upon commit and update.
+The first thing to do is to import the Anaconda environment by doing `conda env create --file environment.yml`.
+Then, select the newly created environment with `conda activate lqfn`, and run `python scripts.py install`.
+The installation process installs git hooks to perform automated tasks upon commit and update, and sets up the package `lqfn` to be used within the project.
 
 
 ### Documentation
