@@ -4,4 +4,4 @@ This subpackage contains modules for Path Integral calculations using Monte Carl
 
 from . import metropolis
 
-__all__ = ['metropolis']
+__all__ = ["metropolis"]
