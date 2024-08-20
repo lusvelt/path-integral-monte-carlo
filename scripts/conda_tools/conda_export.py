@@ -122,9 +122,7 @@ def CLI() -> argparse.Namespace:
     return args
 
 
-def export_env(
-    from_history: bool = False, no_builds: bool = False
-) -> dict[str, Union[str, list, dict]]:
+def export_env(from_history: bool = False, no_builds: bool = False) -> dict[str, Union[str, list, dict]]:
     """Run the command `conda env export` plus additional flags
     and get the output from the terminal. This function is mostly
     copied from the gist I found online. Link above, in module docstring"""
@@ -229,9 +227,7 @@ def _create_split_dictionary(env_data: list) -> dict:
             pkg_list = package["pip"]
             for pkg_name in pkg_list:
                 if isinstance(pkg_name, str):
-                    name_split_dict = _split_by_name_and_version(
-                        pkg_name, is_pip_package=True
-                    )
+                    name_split_dict = _split_by_name_and_version(pkg_name, is_pip_package=True)
                     _name = name_split_dict.get("name")
                     split_deps["pip"][_name] = name_split_dict
     return split_deps
@@ -257,18 +253,14 @@ def merge_dependencies(full_env, history_env, use_versions: bool) -> list:
                 for _pip_item_key in split_full_deps[item_key]:
                     if use_versions:
                         pkg_object: dict = split_full_deps[item_key][_pip_item_key]
-                        joined_pkg: str = _join_name_version(
-                            pkg_object, is_pip_package=True
-                        )
+                        joined_pkg: str = _join_name_version(pkg_object, is_pip_package=True)
                         pip_dict["pip"].append(joined_pkg)
                     else:
                         pip_dict["pip"].append(_pip_item_key)
             else:
                 if use_versions:
                     pkg_object: dict = split_full_deps[item_key]
-                    joined_pkg: str = _join_name_version(
-                        pkg_object, is_pip_package=False
-                    )
+                    joined_pkg: str = _join_name_version(pkg_object, is_pip_package=False)
                     _dependencies.append(joined_pkg)
                 else:
                     _dependencies.append(item_key)
@@ -288,9 +280,7 @@ def produce_output(output_file: str, env_data: dict, verbose: bool):
             yaml.dump(env_data, sys.stdout)
 
 
-def _replace_env_name(
-    new_name: str, reference_env: dict, env_to_modify: dict, include_prefix: bool = True
-) -> dict:
+def _replace_env_name(new_name: str, reference_env: dict, env_to_modify: dict, include_prefix: bool = True) -> dict:
     """Modifies the `name` and `prefix` sections of Conda's
     environment dictionary file"""
     if new_name is None:
@@ -307,9 +297,7 @@ def _replace_env_name(
         env_to_modify["prefix"] = str(new_path)
 
     if not include_prefix:
-        env_to_modify.pop(
-            "prefix", "Key `prefix` NOT found when trying to remove from dictionary"
-        )
+        env_to_modify.pop("prefix", "Key `prefix` NOT found when trying to remove from dictionary")
 
     return env_to_modify
 
@@ -333,9 +321,7 @@ def main(args):
         # produce_output(output_file, full_env_output, verbose=verbose)
         # return
 
-    elif (
-        from_history and not use_versions
-    ):  # return the standard --from-history response
+    elif from_history and not use_versions:  # return the standard --from-history response
         final_env_dict = export_env(from_history=True)  # from history
         final_env_dict["channels"] = full_env_output["channels"]
 
@@ -350,9 +336,7 @@ def main(args):
         # -- Create merged list of dependencies
         full_env_output: dict = export_env(from_history=False, no_builds=False)
         hist_env_output: dict = export_env(from_history=True)
-        _merged_dependencies: list = merge_dependencies(
-            full_env_output, hist_env_output, use_versions
-        )
+        _merged_dependencies: list = merge_dependencies(full_env_output, hist_env_output, use_versions)
 
         # -- setup final env dictionary
         final_env_dict = dict()
@@ -367,9 +351,7 @@ def main(args):
         final_env_dict["prefix"] = full_env_output["prefix"]
 
     # -- Modify name and prefix if specified
-    final_env_dict = _replace_env_name(
-        env_name, full_env_output, final_env_dict, include_prefix=include_prefix
-    )
+    final_env_dict = _replace_env_name(env_name, full_env_output, final_env_dict, include_prefix=include_prefix)
 
     # -- Output final result
     produce_output(output_file, final_env_dict, verbose=verbose)
