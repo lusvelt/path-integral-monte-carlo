@@ -62,7 +62,7 @@ class NonRelativisticSingleParticle1D:
         Computes the action of a path defined on the lattice characterized by $N$ temporal slices.
 
         Args:
-            path (numpy.ndarray[N]): Array of N positions representing the path.
+            path (numpy.ndarray[N+1]): Array of N+1 positions representing the path.
 
         Returns:
             float: the value of the action for the specified path.

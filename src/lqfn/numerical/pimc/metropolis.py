@@ -6,20 +6,20 @@ from typing import Callable
 import numpy as np
 
 
-def _update_path(path, S, eps):
+def _update_path(path, S_per_timeslice, eps):
     N = path.shape[0]
     for j in range(N):
         old_x = path[j]  # save original value
-        old_Sj = S(j, path)
-        path[j] = path[j] + np.random.uniform(-eps, eps)  # update path[j]
-        dS = S(j, path) - old_Sj  # change in action
+        old_Sj = S_per_timeslice(j, path)
+        path[j] += np.random.uniform(-eps, eps)  # update path[j]
+        dS = S_per_timeslice(j, path) - old_Sj  # change in action
         if dS > 0 and np.exp(-dS) < np.random.uniform(0, 1):
             path[j] = old_x  # restore old value
 
 
 def _generate_functional_samples(
     functional: Callable,
-    S_per_component: Callable,
+    S_per_timeslice: Callable,
     N: int,
     N_cf: int,
     N_cor: int,
@@ -28,20 +28,18 @@ def _generate_functional_samples(
 ):
     functional_samples = np.zeros((N_cf, N))
     path = np.zeros(N)
-    for j in range(N):
-        path[j] = 0
-    for j in range(thermalization_its * N_cor):  # thermalization
-        _update_path(path, S_per_component, eps)
+    for _ in range(thermalization_its * N_cor):  # thermalization
+        _update_path(path, S_per_timeslice, eps)
     for rows in range(N_cf):
-        for j in range(N_cor):  # discard N_cor values
-            _update_path(path, S_per_component, eps)
+        for _ in range(N_cor):  # discard N_cor values
+            _update_path(path, S_per_timeslice, eps)
         for n in range(N):  # for every time instant we have N_cf values of G
             functional_samples[rows][n] = functional(path, n)
     return functional_samples
 
 
 def compute_path_integral_average(
-    functional: Callable, S_per_component: Callable, N: int, N_cf: int, N_cor: int, eps: float, thermalization_its: int = 5, bootstrap: bool = False
+    functional: Callable, S_per_timeslice: Callable, N: int, N_cf: int, N_cor: int, eps: float, thermalization_its: int = 5, bootstrap: bool = False
 ):
     """
     Computes the path integral average
@@ -51,8 +49,8 @@ def compute_path_integral_average(
     using the Metropolis Monte Carlo method explained in section 2.2 of "Lattice QCD for Novices" of P. Lepage
 
     Args:
-        functional(Callable[numpy.ndarray[float, N], float]): A functional taking a path as input (as a numpy array of length N) and returning a number.
-        S_per_component(Callable[int, numpy.ndarray[float, N]]): A functional taking as input an integer $j$ and a path, and returning the contribution of the $j$-th component of each path point to the action.
+        functional(Callable[numpy.ndarray[float, N], float]): A functional taking a path (as a numpy array of length N) and a (discretized) time instant and returning a number.
+        S_per_timeslice(Callable[int, numpy.ndarray[float, N]]): A functional taking as input an integer $j$ and a path, and returning the contribution of the $j$-th point of the path to the action.
         N (int): Number of path points.
         N_cf (int): Total number of samples contributing to be saved during the process for computing the path integral average.
         N_cor (int): Number of path updates before picking each sample.
@@ -64,7 +62,7 @@ def compute_path_integral_average(
         numpy.ndarray[float, N]: Path integral average of the functional.
         numpy.ndarray[float, N]: Standard deviation error associated to each instant of time in the path integral average.
     """
-    functional_samples = _generate_functional_samples(functional, S_per_component, N, N_cf, N_cor, eps, thermalization_its)
+    functional_samples = _generate_functional_samples(functional, S_per_timeslice, N, N_cf, N_cor, eps, thermalization_its)
     if bootstrap:
         matrix_of_functionals_bootstrap = np.zeros((N_cf, N))
         for rows in range(N_cf):
