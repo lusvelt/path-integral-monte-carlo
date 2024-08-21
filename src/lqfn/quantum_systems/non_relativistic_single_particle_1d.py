@@ -62,16 +62,14 @@ class NonRelativisticSingleParticle1D:
         Computes the action of a path defined on the lattice characterized by $N$ temporal slices.
 
         Args:
-            path (numpy.ndarray[N]): Array of N positions representing the path.
+            path (numpy.ndarray[N+1]): Array of N+1 positions representing the path.
 
         Returns:
             float: the value of the action for the specified path.
         """
         S = 0
         for j in range(self.N):
-            S += self.m / (2 * self.a) * (path[j + 1] - path[j]) ** 2 + self.a * self.V(
-                path[j]
-            )
+            S += self.m / (2 * self.a) * (path[j + 1] - path[j]) ** 2 + self.a * self.V(path[j])
         return S
 
     def _integrand_factory(self, x: float) -> Callable:
@@ -167,9 +165,7 @@ class NonRelativisticSingleParticle1D:
         def potential(particle):
             return self.V(particle.x)
 
-        H = Hamiltonian(
-            particle, potential, N, extent=2 * np.max(self.box), spatial_ndim=1
-        )
+        H = Hamiltonian(particle, potential, N, extent=2 * np.max(self.box), spatial_ndim=1)
         eigenstates = H.solve(max_states)
         eigenstates.energies = eigenstates.energies / ENERGY_HARTREE_EV
         return eigenstates

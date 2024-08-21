@@ -21,16 +21,10 @@ if __name__ == "__main__":
         help="Imports anaconda environment from environment.yml file into the current anaconda environment",
     )
 
-    install_hooks_parser = subparsers.add_parser(
-        "install-hooks", help="Installs hooks in .git/hooks folder"
-    )
-    post_update_hook_parser = subparsers.add_parser(
-        "post-update-hook", help="Executes post-update hook"
-    )
+    install_hooks_parser = subparsers.add_parser("install-hooks", help="Installs hooks in .git/hooks folder")
+    post_update_hook_parser = subparsers.add_parser("post-update-hook", help="Executes post-update hook")
 
-    install_parser = subparsers.add_parser(
-        "install", help="Performs first installation tasks"
-    )
+    install_parser = subparsers.add_parser("install", help="Performs first installation tasks")
 
     args, _ = parser.parse_known_args()
 
