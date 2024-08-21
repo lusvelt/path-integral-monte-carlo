@@ -8,6 +8,7 @@ from qmsolve import Hamiltonian, SingleParticle
 from qmsolve.eigenstates import Eigenstates
 import vegas
 from ..numerical import utils
+from ..numerical.pimc import metropolis
 
 
 class NonRelativisticSingleParticle1D:
@@ -17,34 +18,35 @@ class NonRelativisticSingleParticle1D:
     The standard modelization of such a system is given by the Schrodinger equation, for which a potential $V$ and the mass of the particle $m$ should be given. In addition, we assume that the initial time is $t_i = 0$ and the final time is $t_f = T$.
 
     Attributes:
-        V (Callable[float, float]): The potential characterizing the system.
         m (float): Mass of the particle.
         T (float): Total evolution time of the system.
         N (int): Number of temporal lattice points for lattice calculations.
         box (Tuple[float, float]): Extremal spatial points `(x_min, x_max)` for the particle box (set to high value for infinite box).
+        V (Callable[float] -> float | None): The potential characterizing the system.
+        S_per_timeslice (Callable[np.ndarray, int] -> float | None): A functional taking as input an integer $j$ and a path, and returning the contribution of the $j$-th point of the path to the action.
     """
 
     def __init__(
-        self,
-        V: Callable,
-        T: float,
-        m: float = 1.0,
-        N: int = 100,
-        box: Tuple = (-100.0, 100.0),
+        self, T: float, m: float = 1.0, N: int = 100, box: Tuple = (-100.0, 100.0), V: Callable | None = None, S_per_timeslice: Callable | None = None
     ):
         """
+        Either V or S_per_timeslice must be specified.
+
         Args:
-            V (Callable[float, float]): The potential characterizing the system.
             T (float): Total evolution time of the system.
             m (float, optional): Mass of the particle. Default is $1.0$.
             N (int): Number of temporal lattice points for lattice calculations.
             box (Tuple[float, float]): Extremal spatial points `(x_min, x_max)` for the particle box (set to high value w.r.t. characteristic length scale of the system for infinite box).
+            V (Callable[float] -> float | None, optional): The potential characterizing the system.
+            S_per_timeslice (Callable[np.ndarray, int] -> float | None, optional): A functional taking as input an integer $j$ and a path, and returning the contribution of the $j$-th point of the path to the action.
         """
-        self.V = V
+        assert (V is not None) or (S_per_timeslice is not None)
         self.T = T
         self.m = m
         self.N = N
         self.box = np.array(list(box))
+        self.V = V
+        self.S_per_timeslice = S_per_timeslice
 
     @property
     def a(self):
@@ -169,3 +171,52 @@ class NonRelativisticSingleParticle1D:
         eigenstates = H.solve(max_states)
         eigenstates.energies = eigenstates.energies / ENERGY_HARTREE_EV
         return eigenstates
+
+    def compute_delta_E(
+        self, functional: Callable, N_cf: int, N_cor: int, eps: float, thermalization_its: int = 5, N_copies: int = 1, bin_size: int = 1
+    ) -> np.ndarray:
+        """
+        Computes the $\\Delta E$ from a correlation function as in (38), that is:
+        $$\\Delta E_n = \\log (G_n / G_{n+1})$$
+        It also computes the error on $\\Delta E_n$.
+        To compute the correlation function, the Monte Carlo metropolis algorithm is used.
+
+        Two differenth methods can be used:
+        - If N_copies == 1: a single path integral is performed to compute the correlation function, and then $\\Delta E$ is computed straightforwardly. The error is propagated from the correlator using:
+        $$\\delta \\Delta E_n = \\sqrt { \\left({\\frac{\\partial \\Delta E_n}{\\partial G_n}} \\right)^2  \\delta G_{n}^2 +  \\left({\\frac{\\partial \\Delta E_n}{\\partial G_{n+1}}} \\right)^2 \\delta G_{n+1}^2 } = \\sqrt{ \\left( \\frac{\\delta G_n}{G_n} \\right)^2 + \\left(\\frac{\\delta G_{n+1}}{G_{n+1}} \\right)^2 } $$
+        - If 1 < N_copies <= N_cf: bootstrap procedure is used both for computing $\\Delta E$ and for the error calculation. See Lepage's paper for more info.
+
+        Args:
+            functional (Callable[np.ndarray, int] -> float): Discretized correlation functional that takes a path and a time index and returns the value of the correlator.
+            N_cf (int): Total number of samples contributing to be saved during the process for computing the path integral average.
+            N_cor (int): Number of path updates before picking each sample.
+            eps (float): $\\epsilon$ parameter for the update of the path.
+            thermalization_its (int, optional): Number of samples to be discarded at the beginning to let the procedure thermalize. Default is 5.
+            N_copies (int, optional): Number of copies to be used for the bootstrap procedure.
+            bin_size (int, optional): Number of samples to be averaged in a single bin. Default is 1.
+
+        Returns:
+            np.ndarray: Series of computed $\\Delta E$s.
+            np.ndarray: Series of computed errors of $\\Delta E$s.
+        """
+        assert N_copies <= N_cf
+        N = self.N
+        propagator, propagator_err = metropolis.compute_path_integral_average(
+            functional, self.S_per_timeslice, N, N_cf, N_cor, eps, thermalization_its, N_copies, bin_size
+        )
+        propagator = np.reshape(propagator, (N_copies, N))
+        propagator_err = np.reshape(propagator_err, (N_copies, N))
+
+        delta_E = np.zeros((N_copies, N - 1))
+        for i in range(N_copies):
+            for n in range(0, N - 1):
+                delta_E[i, n] = np.log(np.abs(propagator[i, n] / propagator[i, n + 1]))
+        delta_E_avg = delta_E.mean(axis=0)
+
+        if N_copies == 1:
+            error_delta_E = np.zeros(N - 1)
+            for n in range(0, N - 1):
+                error_delta_E[n] = np.sqrt(((propagator_err[0, n] / propagator[0, n]) ** 2 + (propagator_err[0, n + 1] / propagator[0, n + 1]) ** 2))
+        else:
+            error_delta_E = delta_E.std(axis=0) / np.sqrt(N_copies - 1)
+        return delta_E_avg, error_delta_E
