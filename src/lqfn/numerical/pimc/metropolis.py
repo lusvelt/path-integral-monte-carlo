@@ -169,5 +169,26 @@ def compute_path_integral_average_bootstrap (functional: Callable, S_per_compone
     std = matrix_of_functionals_bootstrap.std(axis=0) /np.sqrt(N_cf)
     return avg,std
 
+def compute_path_integral_average_binning (functional: Callable, S_per_component:Callable ,N: int, N_cf: int, N_cor: int, eps: float, bin_size, thermalization_its: int=5):
+    functional_samples = np.zeros((N_cf,N))
+    path = np.zeros(N)
+    functional_samples_binned = np.zeros((N_cf//bin_size,N))
+    for j in range(N): 
+        path[j] = 0                               
+    for j in range(thermalization_its*N_cor):   # thermalization
+        _update_path(path, S_per_component, eps)
+    for rows in range(N_cf):                     
+        for j in range(N_cor):   # discard N_cor values
+            _update_path(path, S_per_component, eps)
+        for n in range(N):                    
+            functional_samples[rows][n] = functional(path, n)
+    for n in range(N):
+        for  row  in range(N_cf):
+            functional_samples_binned[row//bin_size][n] += functional_samples[row][n]
+            if ((row+1) %bin_size) == 0:
+                functional_samples_binned[row//bin_size][n] /= bin_size
+    avg = functional_samples_binned.mean(axis=0)
+    std = functional_samples_binned.std(axis=0) / np.sqrt((N_cf/bin_size))
+    return avg, std
 
 
