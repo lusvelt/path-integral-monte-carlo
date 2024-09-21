@@ -218,5 +218,5 @@ class NonRelativisticSingleParticle1D:
             for n in range(0, N - 1):
                 error_delta_E[n] = np.sqrt(((propagator_err[0, n] / propagator[0, n]) ** 2 + (propagator_err[0, n + 1] / propagator[0, n + 1]) ** 2))
         else:
-            error_delta_E = delta_E.std(axis=0) / np.sqrt(N_copies - 1)
+            error_delta_E = delta_E.std(axis=0)
         return delta_E_avg, error_delta_E

@@ -50,7 +50,7 @@ def compute_path_integral_average(
     N_cf: int,
     N_cor: int,
     eps: float,
-    thermalization_its: int = 5,
+    thermalization_its: int = 20,
     N_copies: int = 1,
     bin_size: int = 1,
 ):
@@ -73,14 +73,14 @@ def compute_path_integral_average(
         bin_size (int, optional): Number of samples to be averaged in a single bin.
 
     Returns:
-        numpy.ndarray[float, N_copies * N]: Path integral average of the functional.
-        numpy.ndarray[float, N_copies * N]: Standard deviation error associated to each instant of time in the path integral average.
+        numpy.ndarray[float, N_copies * N]: N_copies boostrap calculations of the path integral average of the functional.
+        numpy.ndarray[float, N_copies * N]: Standard deviation error associated to each instant of time in the path integral average, for each bootstrap.
     """
     assert N_copies <= N_cf
     assert bin_size <= N_cf
     functional_samples = _generate_functional_samples(functional, S_per_timeslice, N, N_cf, N_cor, eps, thermalization_its, bin_size)
     N_bins = int(np.ceil(N_cf / bin_size))  # if bin_size == 1, then N_bins == N_cf
-    if N_copies > 1:
+    if N_copies > 1:  # bootstrap procedure
         bootstrap_avgs = np.zeros((N_copies, N))
         bootstrap_stds = np.zeros((N_copies, N))
         for i in range(N_copies):
