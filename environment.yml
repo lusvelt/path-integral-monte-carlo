@@ -13,6 +13,7 @@ dependencies:
 - sphinx_rtd_theme
 - pylint
 - pytest
+- sympy
 - pip:
   - gvar==13.1.1
   - h5py==3.11.0
