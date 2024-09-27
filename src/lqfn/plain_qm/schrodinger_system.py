@@ -1,5 +1,5 @@
 """
-This module contains code for modelling non-relativistic single particle 1-dimensional quantum systems.
+This module contains code for modelling non-relativistic single particle 1-dimensional quantum systems, called "Schrodinger systems".
 """
 
 from typing import Callable, List, Tuple
@@ -7,11 +7,11 @@ import numpy as np
 from qmsolve import Hamiltonian, SingleParticle
 from qmsolve.eigenstates import Eigenstates
 import vegas
-from ..numerical import utils
-from ..numerical.pimc import metropolis
+from .. import utils
+from . import metropolis
 
 
-class NonRelativisticSingleParticle1D:
+class SchrodingerSystem:
     """
     This class models a non relativistic quantum system composed by a single particle in one spatial dimension, providing methods for computing relevant physical quantities using different numerical methods implemented elsewhere.
 

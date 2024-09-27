@@ -1,4 +1,4 @@
-from lqfn.numerical.pimc import metropolis
+from lqfn.plain_qm import metropolis
 import numpy as np
 
 N = 10

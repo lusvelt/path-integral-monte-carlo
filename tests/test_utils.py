@@ -1,5 +1,5 @@
 import pytest
-from lqfn.numerical.utils import *
+from lqfn.utils import *
 import numpy as np
 
 

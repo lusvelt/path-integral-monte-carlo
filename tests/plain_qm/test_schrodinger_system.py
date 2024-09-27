@@ -2,7 +2,7 @@ import pytest
 import math
 import numpy as np
 from scipy import special as sc
-from lqfn.quantum_systems import NonRelativisticSingleParticle1D
+from lqfn.plain_qm import SchrodingerSystem
 
 
 m = 1
@@ -15,11 +15,11 @@ def V(x):
 T = 5
 N = 10
 a = 0.5
-system = NonRelativisticSingleParticle1D(V, T=5, m=m, N=10, box=(-10, 10))
+system = SchrodingerSystem(V, T=5, m=m, N=10, box=(-10, 10))
 
 
-def test_NonRelativisticSingleParticle1D():
-    assert isinstance(system, NonRelativisticSingleParticle1D)
+def test_SchrodingerSystem():
+    assert isinstance(system, SchrodingerSystem)
     assert isinstance(system.box, np.ndarray)
     assert system.a == a
 
