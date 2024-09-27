@@ -27,7 +27,13 @@ class NonRelativisticSingleParticle1D:
     """
 
     def __init__(
-        self, T: float, m: float = 1.0, N: int = 100, box: Tuple = (-100.0, 100.0), V: Callable | None = None, S_per_timeslice: Callable | None = None
+        self,
+        T: float,
+        m: float = 1.0,
+        N: int = 100,
+        box: Tuple = (-100.0, 100.0),
+        V: Callable | None = None,
+        S_per_timeslice: Callable | None = None,
     ):
         """
         Either V or S_per_timeslice must be specified.
@@ -38,7 +44,7 @@ class NonRelativisticSingleParticle1D:
             N (int): Number of temporal lattice points for lattice calculations.
             box (Tuple[float, float]): Extremal spatial points `(x_min, x_max)` for the particle box (set to high value w.r.t. characteristic length scale of the system for infinite box).
             V (Callable[float] -> float | None, optional): The potential characterizing the system.
-            S_per_timeslice (Callable[np.ndarray, int] -> float | None, optional): A functional taking as input an integer $j$ and a path, and returning the contribution of the $j$-th point of the path to the action.
+            S_per_timeslice (Callable[np.ndarray, int, float] -> float | None, optional): A functional taking as input an integer $j$, a path and the lattice spacing, and returning the contribution of the $j$-th point of the path to the action.
         """
         assert (V is not None) or (S_per_timeslice is not None)
         self.T = T
@@ -46,7 +52,8 @@ class NonRelativisticSingleParticle1D:
         self.N = N
         self.box = np.array(list(box))
         self.V = V
-        self.S_per_timeslice = S_per_timeslice
+        self.S_per_timeslice = lambda j, x: S_per_timeslice(j, x, self.a)
+        self._eigenstates = None
 
     @property
     def a(self):
@@ -106,12 +113,12 @@ class NonRelativisticSingleParticle1D:
             vegas.RAvg: The `vegas` result of the integration procedure. See https://vegas.readthedocs.io/en/latest/vegas.html#vegas.RAvg
             List[vegas.RAvg]: The list of results for each separate integrand.
         """
-        # TODO: see if another level of abstraction should be inserted, which handles the setup of vegas integration
         domain = [[lower_bound, upper_bound]] * (self.N - 1)
         results = []
         if not isinstance(x, np.ndarray):
             x = np.array([x])
         results = []
+        # TODO: parallelize
         for x_i in x:
             integrator = vegas.Integrator(domain)
             f = self._integrand_factory(x_i)
@@ -172,8 +179,30 @@ class NonRelativisticSingleParticle1D:
         eigenstates.energies = eigenstates.energies / ENERGY_HARTREE_EV
         return eigenstates
 
-    def compute_delta_E(
-        self, functional: Callable, N_cf: int, N_cor: int, eps: float, thermalization_its: int = 5, N_copies: int = 1, bin_size: int = 1
+    def get_delta_E_schrodinger(self, N: int = 100000) -> float:
+        """
+        Computes $\\Delta E$ (that is, the first excitation energy of the system multiplied by the lattice spacing $a$) by solving the Schrodinger equation.
+
+        Args:
+            N (int): Resolution (number of points) of the eigenfunction (affects the precision of $\\Delta E)
+
+        Returns:
+            float: The computed value of $\\Delta E$
+        """
+        if self._eigenstates is None:
+            self._eigenstates = self.solve_schrodinger(N, 2)
+        return (self._eigenstates.energies[1] - self._eigenstates.energies[0]) * self.a
+
+    def compute_delta_E_pimc(
+        self,
+        functional: Callable,
+        N_cf: int,
+        N_cor: int,
+        eps: float,
+        thermalization_its: int = 5,
+        N_copies: int = 1,
+        bin_size: int = 1,
+        N_points: int = None,
     ) -> np.ndarray:
         """
         Computes the $\\Delta E$ from a correlation function as in (38), that is:
@@ -194,28 +223,41 @@ class NonRelativisticSingleParticle1D:
             thermalization_its (int, optional): Number of samples to be discarded at the beginning to let the procedure thermalize. Default is 5.
             N_copies (int, optional): Number of copies to be used for the bootstrap procedure.
             bin_size (int, optional): Number of samples to be averaged in a single bin. Default is 1.
-
+            N_points (int, optional): Number of lattice points to perform the calculation for. Default is the max value, specified in the constructor. One may choose to compute $\\Delta E$ only for a few starting points to avoid asting computation time.
         Returns:
-            np.ndarray: Series of computed $\\Delta E$s.
+            np.ndarray: Series of computed N-1 $\\Delta E$s.
             np.ndarray: Series of computed errors of $\\Delta E$s.
         """
         assert N_copies <= N_cf
-        N = self.N
-        propagator, propagator_err = metropolis.compute_path_integral_average(
-            functional, self.S_per_timeslice, N, N_cf, N_cor, eps, thermalization_its, N_copies, bin_size
-        )
-        propagator = np.reshape(propagator, (N_copies, N))
-        propagator_err = np.reshape(propagator_err, (N_copies, N))
+        if N_points is None:
+            N_points = self.N
+        else:
+            assert 0 < N_points <= self.N
 
-        delta_E = np.zeros((N_copies, N - 1))
+        propagator, propagator_err = metropolis.compute_path_integral_average(
+            functional,
+            self.S_per_timeslice,
+            self.N,
+            N_cf,
+            N_cor,
+            eps,
+            thermalization_its,
+            N_copies,
+            bin_size,
+            N_points,
+        )
+        propagator = np.reshape(propagator, (N_copies, N_points))
+        propagator_err = np.reshape(propagator_err, (N_copies, N_points))
+
+        delta_E = np.zeros((N_copies, N_points - 1))
         for i in range(N_copies):
-            for n in range(0, N - 1):
+            for n in range(0, N_points - 1):
                 delta_E[i, n] = np.log(np.abs(propagator[i, n] / propagator[i, n + 1]))
         delta_E_avg = delta_E.mean(axis=0)
 
         if N_copies == 1:
-            error_delta_E = np.zeros(N - 1)
-            for n in range(0, N - 1):
+            error_delta_E = np.zeros(N_points - 1)
+            for n in range(0, N_points - 1):
                 error_delta_E[n] = np.sqrt(((propagator_err[0, n] / propagator[0, n]) ** 2 + (propagator_err[0, n + 1] / propagator[0, n + 1]) ** 2))
         else:
             error_delta_E = delta_E.std(axis=0)

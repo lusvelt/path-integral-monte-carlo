@@ -24,19 +24,20 @@ def _generate_functional_samples(
     N_cf: int,
     N_cor: int,
     eps: float,
-    thermalization_its: int = 5,
-    bin_size: int = 1,
+    thermalization_its: int,
+    bin_size: int,
+    N_points: int,
 ):
     N_bins = int(np.ceil(N_cf / bin_size))
-    functional_samples = np.zeros((N_bins, N))
-    bin_samples = np.zeros((bin_size, N))
+    functional_samples = np.zeros((N_bins, N_points))
+    bin_samples = np.zeros((bin_size, N_points))
     path = np.zeros(N)
     for _ in range(thermalization_its * N_cor):  # thermalization
         _update_path(path, S_per_timeslice, eps)
     for i in range(N_cf):
         for _ in range(N_cor):  # discard N_cor values
             _update_path(path, S_per_timeslice, eps)
-        for n in range(N):  # for every time instant we have N_cf values of G
+        for n in range(N_points):  # for every time instant we have N_cf values of G
             bin_samples[i % bin_size][n] = functional(path, n)
         if (i + 1) % bin_size == 0 or i == N_cf - 1:
             functional_samples[i // bin_size] = bin_samples.mean(axis=0)
@@ -53,6 +54,7 @@ def compute_path_integral_average(
     thermalization_its: int = 20,
     N_copies: int = 1,
     bin_size: int = 1,
+    N_points: int = None,
 ):
     """
     Computes the path integral average
@@ -71,6 +73,7 @@ def compute_path_integral_average(
         thermalization_its (int, optional): Number of samples to be discarded at the beginning to let the procedure thermalize. Default is 5.
         N_copies (int, optional): Number of bootstrap averages to be returned. Default is 1 (no bootstrap).
         bin_size (int, optional): Number of samples to be averaged in a single bin.
+        N_points (int, optional)
 
     Returns:
         numpy.ndarray[float, N_copies * N]: N_copies boostrap calculations of the path integral average of the functional.
@@ -78,16 +81,32 @@ def compute_path_integral_average(
     """
     assert N_copies <= N_cf
     assert bin_size <= N_cf
-    functional_samples = _generate_functional_samples(functional, S_per_timeslice, N, N_cf, N_cor, eps, thermalization_its, bin_size)
+
+    if N_points is None:
+        N_points = N
+
+    assert 0 < N_points <= N
+
+    functional_samples = _generate_functional_samples(
+        functional,
+        S_per_timeslice,
+        N,
+        N_cf,
+        N_cor,
+        eps,
+        thermalization_its,
+        bin_size,
+        N_points,
+    )
     N_bins = int(np.ceil(N_cf / bin_size))  # if bin_size == 1, then N_bins == N_cf
     if N_copies > 1:  # bootstrap procedure
-        bootstrap_avgs = np.zeros((N_copies, N))
-        bootstrap_stds = np.zeros((N_copies, N))
+        bootstrap_avgs = np.zeros((N_copies, N_points))
+        bootstrap_stds = np.zeros((N_copies, N_points))
         for i in range(N_copies):
-            matrix_of_functionals_bootstrap = np.zeros((N_bins, N))
+            matrix_of_functionals_bootstrap = np.zeros((N_bins, N_points))
             for rows in range(N_bins):
                 index_of_copied_path = int(np.random.uniform(0, N_bins))
-                for n in range(N):
+                for n in range(N_points):
                     matrix_of_functionals_bootstrap[rows][n] = functional_samples[index_of_copied_path][n]
             bootstrap_avgs[i] = matrix_of_functionals_bootstrap.mean(axis=0)
             bootstrap_stds[i] = matrix_of_functionals_bootstrap.std(axis=0) / np.sqrt(N_bins)

@@ -39,3 +39,22 @@ def get_extended_linspace_size(x_arr: np.ndarray, extent: float) -> int:
     assert np.all(np.isclose(diff, diff[0]))
     x_range = x_arr[-1] - x_arr[0]
     return int(np.round((x_arr.shape[0] - 1) / x_range * extent)) + 1
+
+
+def get_weighted_avg_and_err(data: np.ndarray, errs: np.ndarray, N_points: int):
+    """
+    Computes the weighted average of a dataset, and the corresponding standard deviation.
+
+    Args:
+        data (np.ndarray): Numpy array containing the data points
+        err (np.ndarray): Numpy array containing the errors associated to the data points
+        N_points (int): Number of points to fetch from the array to compute the weighted average
+
+    Returns:
+        float: The weighted average
+        float: The error associated to the weighted average
+    """
+    assert data.shape == errs.shape
+    avg = np.average(data[:N_points], weights=1 / errs[:N_points] ** 2)
+    err = np.sqrt(np.average((data[:N_points] - avg) ** 2))
+    return avg, err
