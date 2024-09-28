@@ -1,11 +1,9 @@
 IMPORTANT:
-- Compute the z value at the end of anharmonic-oscillator.ipynb
-- See if the expected Delta E should still be 1.933 even after the O(a^2) corrections to the potential
 - Refactor compute_G and plot()
 - Document also private methods, at least comment them
 - Explain better what we are doing (in all jupyter notebooks)
 - Plot the error (or say something about it) in propagators-computation.ipynb
-- Parallelize the calculations of the points in propagators-computation.ipynb
+- Add axes labels in propagators-computation.ipynb
 - Write tests for all public functions
 - Implement lattice QCD
 

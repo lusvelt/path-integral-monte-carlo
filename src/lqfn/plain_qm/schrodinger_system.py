@@ -3,6 +3,7 @@ This module contains code for modelling non-relativistic single particle 1-dimen
 """
 
 from typing import Callable, List, Tuple
+import concurrent.futures
 import numpy as np
 from qmsolve import Hamiltonian, SingleParticle
 from qmsolve.eigenstates import Eigenstates
@@ -114,21 +115,22 @@ class SchrodingerSystem:
             List[vegas.RAvg]: The list of results for each separate integrand.
         """
         domain = [[lower_bound, upper_bound]] * (self.N - 1)
-        results = []
-        if not isinstance(x, np.ndarray):
-            x = np.array([x])
-        results = []
-        # TODO: parallelize
-        for x_i in x:
+
+        def get_single_value(y):
             integrator = vegas.Integrator(domain)
-            f = self._integrand_factory(x_i)
+            f = self._integrand_factory(y)
             integrator(f, nitn=nitn_discarded, neval=neval)
             result = integrator(f, nitn=nitn_tot - nitn_discarded, neval=neval)
-            results.append(result)
-        if len(results) == 1:
-            return results[0]
+            return result
+
+        if isinstance(x, float):
+            return get_single_value(x)
         else:
-            return results
+            assert isinstance(x, np.ndarray)
+            with concurrent.futures.ThreadPoolExecutor(max_workers=16) as executor:
+                futures = [executor.submit(get_single_value, z) for z in x]
+                results = [job.result() for job in futures]
+                return results
 
     def compute_propagator_from_ground_state(
         self,
@@ -142,6 +144,8 @@ class SchrodingerSystem:
         in the approximation of large $T$, using the formula:
 
         $$\\bra{x} e^{-\\hat{H}T} \\ket{x} \\approx e^{-E_0 T} {\\lvert\\braket{x | E_0}\\rvert}^2 $$
+
+        Parallelism is used to compute more points at the same time.
 
         """
         if (ground_wavefunction is None) or (ground_energy is None):
