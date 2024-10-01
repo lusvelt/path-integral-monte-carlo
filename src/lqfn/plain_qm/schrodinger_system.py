@@ -25,7 +25,7 @@ class SchrodingerSystem:
         N (int): Number of temporal lattice points for lattice calculations.
         box (Tuple[float, float]): Extremal spatial points `(x_min, x_max)` for the particle box (set to high value for infinite box).
         V (Callable[float] -> float | None): The potential characterizing the system.
-        S_per_timeslice (Callable[np.ndarray, int] -> float | None): A functional taking as input an integer $j$ and a path, and returning the contribution of the $j$-th point of the path to the action.
+        S_per_timeslice (Callable[np.ndarray, int] -> float | None): A functional taking as input an integer $j$ and a path, and returning the contribution of the $j$-th time instant of the path to the action.
     """
 
     def __init__(
@@ -46,7 +46,7 @@ class SchrodingerSystem:
             N (int): Number of temporal lattice points for lattice calculations.
             box (Tuple[float, float]): Extremal spatial points `(x_min, x_max)` for the particle box (set to high value w.r.t. characteristic length scale of the system for infinite box).
             V (Callable[float] -> float | None, optional): The potential characterizing the system.
-            S_per_timeslice (Callable[np.ndarray, int, float] -> float | None, optional): A functional taking as input an integer $j$, a path and the lattice spacing, and returning the contribution of the $j$-th point of the path to the action.
+            S_per_timeslice (Callable[np.ndarray, int, float] -> float | None, optional): A functional taking as input an integer $j$, a path and the lattice spacing, and returning the contribution of the $j$-th time instant of the path to the action.
         """
         assert (V is not None) or (S_per_timeslice is not None)
         self.T = T
@@ -55,22 +55,27 @@ class SchrodingerSystem:
         self.box = np.array(list(box))
         self.V = V
 
+        # Since a is fixed at this point, saturate the a parameter of the function that computes the action
         @njit
         def S(j, x):
             return S_per_timeslice(j, x, T / N)
 
         self.S_per_timeslice = S
-        self._eigenstates = None
+        self._eigenstates = None  # This attribute will eventually be filled when Schrodinger equation will be solved
+        self._eigenstates_N = None  # This saves the precision by which the Schrodinger equation results have been stored
 
     @property
-    def a(self):
+    def a(self) -> float:
         """
-        Temporal interval spacing for lattice calculations.
+        float: Temporal interval spacing for lattice calculations.
         """
         return self.T / self.N
 
     @property
-    def _A(self):  # Normalization constant of path integral
+    def A(self) -> float:
+        """
+        float: Normalization constant of the path integral
+        """
         return (self.m / (2 * np.pi * self.a)) ** (self.N / 2)
 
     def S_lat(self, path: np.ndarray) -> float:
@@ -88,25 +93,23 @@ class SchrodingerSystem:
             S += self.m / (2 * self.a) * (path[j + 1] - path[j]) ** 2 + self.a * self.V(path[j])
         return S
 
+    # This is a factory function that generates a function, which will be the integrand for vegas.
+    # The integrand takes the middle points of the path, and has the end points of the path fixed at x
     def _integrand_factory(self, x: float) -> Callable:
         def integrand(path_var: np.ndarray):
             path = np.insert(path_var, 0, x)
             path = np.append(path, x)
-            return self._A * np.exp(-self.S_lat(path))
+            return self.A * np.exp(-self.S_lat(path))
 
         return integrand
 
     def compute_propagator_pimc(
-        self,
-        x: np.ndarray | float,
-        lower_bound=-5.0,
-        upper_bound=5.0,
-        nitn_tot=30,
-        nitn_discarded=10,
-        neval=2500,
+        self, x: np.ndarray | float, lower_bound=-5.0, upper_bound=5.0, nitn_tot=30, nitn_discarded=10, neval=2500, max_workers=16
     ) -> vegas.RAvg | List[vegas.RAvg]:
         """
         Computes the propagator $\\bra{x} e^{-\\hat{H}T} \\ket{x}$ through the discretized path integral formula, using the `vegas` library, which implements the Monte Carlo estimation of multidimensional integrals. See section 2.1 of Lepage's "Lattice QCD for novices" paper for more information.
+
+        Parallelism is used to compute more points at the same time.
 
         Args:
             x (float | np.ndarray): Argument of the propagator (or array of arguments).
@@ -115,13 +118,14 @@ class SchrodingerSystem:
             nitn_tot (int): Total number of iterations of `vegas` algorithm to estimate the integral.
             nitn_discarded (int): Number of iterations of `vegas` algorithm to be discarded at the beginning, to let `vegas` adapt to the integrand without polluting the error analysis.
             neval (int): Number of Monte Carlo evaluations of the integral in each iteration of `vegas` algorithm.
-
+            max_workers (int): Maximum number of threads to use for the calculation
         Returns:
             vegas.RAvg: The `vegas` result of the integration procedure. See https://vegas.readthedocs.io/en/latest/vegas.html#vegas.RAvg
             List[vegas.RAvg]: The list of results for each separate integrand.
         """
         domain = [[lower_bound, upper_bound]] * (self.N - 1)
 
+        # Define the job for the threads. Each thread computes a single point of the propagator.
         def get_single_value(y):
             integrator = vegas.Integrator(domain)
             f = self._integrand_factory(y)
@@ -133,7 +137,8 @@ class SchrodingerSystem:
             return get_single_value(x)
         else:
             assert isinstance(x, np.ndarray)
-            with concurrent.futures.ThreadPoolExecutor(max_workers=16) as executor:
+            # Launch threads execution. The function returns when all threads have finished, and the order is kept in the results array.
+            with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
                 futures = [executor.submit(get_single_value, z) for z in x]
                 results = [job.result() for job in futures]
                 return results
@@ -150,8 +155,6 @@ class SchrodingerSystem:
         in the approximation of large $T$, using the formula:
 
         $$\\bra{x} e^{-\\hat{H}T} \\ket{x} \\approx e^{-E_0 T} {\\lvert\\braket{x | E_0}\\rvert}^2 $$
-
-        Parallelism is used to compute more points at the same time.
 
         """
         if (ground_wavefunction is None) or (ground_energy is None):
@@ -199,7 +202,10 @@ class SchrodingerSystem:
         Returns:
             float: The computed value of $\\Delta E$
         """
-        if self._eigenstates is None:
+        # Save eigenstates in a local variable to avoid computing them each time
+        # Only compute them if precision changes or if they have never been computed
+        if self._eigenstates is None or self._eigenstates_N != N:
+            self._eigenstates_N = N
             self._eigenstates = self.solve_schrodinger(N, 2)
         return (self._eigenstates.energies[1] - self._eigenstates.energies[0]) * self.a
 
@@ -260,6 +266,7 @@ class SchrodingerSystem:
             N_points,
         )
 
+        # Now we have a pool of samples, and we can compute \Delta E and its error
         delta_E = np.zeros((N_copies, N_points - 1))
         for i in range(N_copies):
             for n in range(0, N_points - 1):
