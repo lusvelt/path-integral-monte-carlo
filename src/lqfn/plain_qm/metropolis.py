@@ -2,15 +2,12 @@
 This module provides functions to compute path integrals using Metropolis Monte Carlo method (explained in section 2.3 of Lepage's paper "Lattice QCD for Novices")
 """
 
-from typing import Callable
 import numpy as np
+from numba import njit
 
 
-def _update_path(
-    path: np.ndarray,
-    S_per_timeslice: Callable,
-    eps: float,
-):
+@njit
+def update_path(path, S_per_timeslice, eps: np.float64):
     """
     Metropolis Monte Carlo update of the path explained in section 2.2 of "Lattice QCD for Novices" of P. Lepage
 
@@ -18,9 +15,6 @@ def _update_path(
         path (numpy.ndarray[float, N]): The path of the lattice to be updated.
         S_per_timeslice(Callable[int, numpy.ndarray[float, N]] -> float): A functional taking as input an integer $j$ and a path, and returning the contribution of the $j$-th point of the path to the action.
         eps (float): $\\epsilon$ parameter for the update of the path.
-
-    Returns:
-        None
     """
     N = path.shape[0]
     for j in range(N):
@@ -32,16 +26,17 @@ def _update_path(
             path[j] = old_x  # restore old value
 
 
-def _generate_functional_samples(
-    functional: Callable,
-    S_per_timeslice: Callable,
-    N: int,
-    N_cf: int,
-    N_cor: int,
-    eps: float,
-    thermalization_its: int,
-    bin_size: int,
-    N_points: int,
+@njit
+def generate_functional_samples(
+    functional,
+    S_per_timeslice,
+    N: np.int32,
+    N_cf: np.int32,
+    N_cor: np.int32,
+    eps: np.float64,
+    thermalization_its: np.int32,
+    bin_size: np.int32,
+    N_points: np.int32,
 ):
     """
     Computes the matrix of functional samples, where each row is the average of the functional over N_points time instants for a given bin.
@@ -61,32 +56,34 @@ def _generate_functional_samples(
         numpy.ndarray[float, N_bins * N_points]: Matrix of functional samples.
     """
     N_bins = int(np.ceil(N_cf / bin_size))
-    functional_samples = np.zeros((N_bins, N_points))
-    bin_samples = np.zeros((bin_size, N_points))
-    path = np.zeros(N)
+    functional_samples = np.zeros((N_bins, N_points), dtype=np.float64)
+    bin_samples = np.zeros((bin_size, N_points), dtype=np.float64)
+    path = np.zeros(N, np.float64)
     for _ in range(thermalization_its * N_cor):  # thermalization
-        _update_path(path, S_per_timeslice, eps)
+        update_path(path, S_per_timeslice, eps)
     for i in range(N_cf):
         for _ in range(N_cor):  # discard N_cor values
-            _update_path(path, S_per_timeslice, eps)
+            update_path(path, S_per_timeslice, eps)
         for n in range(N_points):  # for every time instant we have N_cf values of G
             bin_samples[i % bin_size][n] = functional(path, n)
         if (i + 1) % bin_size == 0 or i == N_cf - 1:
-            functional_samples[i // bin_size] = bin_samples.mean(axis=0)
+            for n in range(N_points):
+                functional_samples[i // bin_size, n] = np.sum(bin_samples[:, n]) / bin_size
     return functional_samples
 
 
+@njit
 def compute_path_integral_average(
-    functional: Callable,
-    S_per_timeslice: Callable,
-    N: int,
-    N_cf: int,
-    N_cor: int,
-    eps: float,
-    thermalization_its: int = 20,
-    N_copies: int = 1,
-    bin_size: int = 1,
-    N_points: int = None,
+    functional,
+    S_per_timeslice,
+    N: np.int32,
+    N_cf: np.int32,
+    N_cor: np.int32,
+    eps: np.float64,
+    thermalization_its: np.int32 = 20,
+    N_copies: np.int32 = 1,
+    bin_size: np.int32 = 1,
+    N_points: np.int32 = None,
 ):
     """
     Computes the path integral average
@@ -119,7 +116,7 @@ def compute_path_integral_average(
 
     assert 0 < N_points <= N
 
-    functional_samples = _generate_functional_samples(
+    functional_samples = generate_functional_samples(
         functional,
         S_per_timeslice,
         N,
@@ -131,19 +128,21 @@ def compute_path_integral_average(
         N_points,
     )
     N_bins = int(np.ceil(N_cf / bin_size))  # if bin_size == 1, then N_bins == N_cf
+    avgs = np.zeros((N_copies, N_points), dtype=np.float64)
+    stds = np.zeros((N_copies, N_points), dtype=np.float64)
     if N_copies > 1:  # bootstrap procedure
-        bootstrap_avgs = np.zeros((N_copies, N_points))
-        bootstrap_stds = np.zeros((N_copies, N_points))
         for i in range(N_copies):
-            matrix_of_functionals_bootstrap = np.zeros((N_bins, N_points))
+            matrix_of_functionals_bootstrap = np.zeros((N_bins, N_points), dtype=np.float64)
             for rows in range(N_bins):
-                index_of_copied_path = int(np.random.uniform(0, N_bins))
+                index_of_copied_path = np.int32(np.random.uniform(0, N_bins))
                 for n in range(N_points):
                     matrix_of_functionals_bootstrap[rows][n] = functional_samples[index_of_copied_path][n]
-            bootstrap_avgs[i] = matrix_of_functionals_bootstrap.mean(axis=0)
-            bootstrap_stds[i] = matrix_of_functionals_bootstrap.std(axis=0) / np.sqrt(N_bins)
-        return bootstrap_avgs, bootstrap_stds
+            for n in range(N_points):
+                avgs[i, n] = np.sum(matrix_of_functionals_bootstrap[:, n]) / N_bins
+                stds[i, n] = np.sum((matrix_of_functionals_bootstrap[:, n] - avgs[i, n]) ** 2) / (N_bins * np.sqrt(N_bins))
+        return avgs, stds
     else:
-        avg = functional_samples.mean(axis=0)
-        std = functional_samples.std(axis=0) / np.sqrt(N_bins)
-        return avg, std
+        for n in range(N_points):
+            avgs[0, n] = np.sum(functional_samples[:, n]) / N_bins
+            stds[0, n] = np.sum((functional_samples[:, n] - avgs[0, n]) ** 2) / (N_bins * np.sqrt(N_bins))
+        return avgs, stds

@@ -8,6 +8,7 @@ import numpy as np
 from qmsolve import Hamiltonian, SingleParticle
 from qmsolve.eigenstates import Eigenstates
 import vegas
+from numba import njit
 from .. import utils
 from . import metropolis
 
@@ -53,7 +54,12 @@ class SchrodingerSystem:
         self.N = N
         self.box = np.array(list(box))
         self.V = V
-        self.S_per_timeslice = lambda j, x: S_per_timeslice(j, x, self.a)
+
+        @njit
+        def S(j, x):
+            return S_per_timeslice(j, x, T / N)
+
+        self.S_per_timeslice = S
         self._eigenstates = None
 
     @property
@@ -238,6 +244,9 @@ class SchrodingerSystem:
         else:
             assert 0 < N_points <= self.N
 
+        propagator = np.zeros((N_copies, N_points), dtype=np.float64)
+        propagator_err = np.zeros((N_copies, N_points), dtype=np.float64)
+
         propagator, propagator_err = metropolis.compute_path_integral_average(
             functional,
             self.S_per_timeslice,
@@ -250,8 +259,6 @@ class SchrodingerSystem:
             bin_size,
             N_points,
         )
-        propagator = np.reshape(propagator, (N_copies, N_points))
-        propagator_err = np.reshape(propagator_err, (N_copies, N_points))
 
         delta_E = np.zeros((N_copies, N_points - 1))
         for i in range(N_copies):
