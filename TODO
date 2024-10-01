@@ -1,5 +1,5 @@
 IMPORTANT:
-- Refactor compute_G and plot()
+- Document that functionals should be decorated with @njit
 - Document also private methods, at least comment them
 - Explain better what we are doing (in all jupyter notebooks)
 - Plot the error (or say something about it) in propagators-computation.ipynb
@@ -8,4 +8,5 @@ IMPORTANT:
 - Implement lattice QCD
 
 IMPROVEMENTS:
+- Refactor compute_G and plot()
 - Compute metropolis average acceptance rate to get eps parameter (optimal at 50% acceptance rate)
