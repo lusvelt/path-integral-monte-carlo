@@ -6,7 +6,22 @@ from typing import Callable
 import numpy as np
 
 
-def _update_path(path, S_per_timeslice, eps):
+def _update_path(
+    path: np.ndarray,
+    S_per_timeslice: Callable,
+    eps: float,
+):
+    """
+    Metropolis Monte Carlo update of the path explained in section 2.2 of "Lattice QCD for Novices" of P. Lepage
+
+    Args:
+        path (numpy.ndarray[float, N]): The path of the lattice to be updated.
+        S_per_timeslice(Callable[int, numpy.ndarray[float, N]] -> float): A functional taking as input an integer $j$ and a path, and returning the contribution of the $j$-th point of the path to the action.
+        eps (float): $\\epsilon$ parameter for the update of the path.
+
+    Returns:
+        None
+    """
     N = path.shape[0]
     for j in range(N):
         old_x = path[j]  # save original value
@@ -28,6 +43,23 @@ def _generate_functional_samples(
     bin_size: int,
     N_points: int,
 ):
+    """
+    Computes the matrix of functional samples, where each row is the average of the functional over N_points time instants for a given bin.
+
+    Args:
+        functional(Callable[numpy.ndarray[float, N]] -> float): A functional taking a path (as a numpy array of length N) and a (discretized) time instant and returning a number.
+        S_per_timeslice(Callable[int, numpy.ndarray[float, N]] -> float): A functional taking as input an integer $j$ and a path, and returning the contribution of the $j$-th point of the path to the action.
+        N (int): Number of path points.
+        N_cf (int): Total number of samples contributing to be saved during the process for computing the path integral average.
+        N_cor (int): Number of path updates before picking each sample.
+        eps (float): $\\epsilon$ parameter for the update of the path.
+        thermalization_its (int, optional): Number of samples to be discarded at the beginning to let the procedure thermalize. Default is 5.
+        bin_size (int, optional): Number of samples to be averaged in a single bin.
+        N_points (int, optional): Number of points to be averaged in the path integral average. Default is N.
+
+    Returns:
+        numpy.ndarray[float, N_bins * N_points]: Matrix of functional samples.
+    """
     N_bins = int(np.ceil(N_cf / bin_size))
     functional_samples = np.zeros((N_bins, N_points))
     bin_samples = np.zeros((bin_size, N_points))
@@ -73,7 +105,7 @@ def compute_path_integral_average(
         thermalization_its (int, optional): Number of samples to be discarded at the beginning to let the procedure thermalize. Default is 5.
         N_copies (int, optional): Number of bootstrap averages to be returned. Default is 1 (no bootstrap).
         bin_size (int, optional): Number of samples to be averaged in a single bin.
-        N_points (int, optional)
+        N_points (int, optional): Number of time instants to be considered in the path integral average. Default is N.
 
     Returns:
         numpy.ndarray[float, N_copies * N]: N_copies boostrap calculations of the path integral average of the functional.

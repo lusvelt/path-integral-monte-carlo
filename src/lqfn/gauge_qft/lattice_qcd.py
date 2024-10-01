@@ -175,6 +175,49 @@ def compute_gamma(links, x, mu):
 
 
 @njit
+def compute_gamma_improved(links, x, mu, u0):
+    d = links.shape[1]
+    N = np.int32(links.shape[0] ** (1 / d))
+    # Computes the Gamma (113) in the paper, given a link specified as start point and direction mu
+    assert x.shape == (d,)
+    assert 0 <= mu < d
+    gamma = np.zeros((3, 3), dtype=np.complex128)
+    x[mu] += 1
+    if x[mu] >= N:
+        x[mu] -= N
+    # there are 6 rectangles for each direction
+    for nu in range(d):
+        if nu != mu:
+            # remaining path
+            s1 = mu + 1
+            s2 = nu + 1
+            plaquette_path_forward = compute_path(links, x, np.array([s2, -s1, s2], dtype=np.int32))
+            plaquette_path_backward = compute_path(links, x, np.array([-s2, -s1, s2], dtype=np.int32))
+
+            rectangles_steps = np.array(
+                [
+                    [s1, s2, -s1, -s1, -s2],
+                    [s1, -s2, -s1, -s1, s2],
+                    [s2, -s1, -s1, -s2, s1],
+                    [-s2, -s1, -s1, s2, s1],
+                    [s2, s2, -s1, -s2, -s2],
+                    [-s2, -s2, -s1, s2, s2],
+                ],
+                dtype=np.int32,
+            )
+
+            rectangle_paths = np.zeros((6, 3, 3), dtype=np.complex128)
+            for i in range(rectangles_steps.shape[0]):
+                rectangle_paths[i] = compute_path(links, x, rectangles_steps[i])
+            rectangle_contributions = np.zeros((3, 3), dtype=np.complex128)
+            for i in range(rectangle_paths.shape[0]):
+                rectangle_contributions += rectangle_paths[i]
+            plaquette_contributions = plaquette_path_forward + plaquette_path_backward
+            gamma += 5 / 3 * plaquette_contributions - 1 / u0**2 * 1 / 12 * rectangle_contributions
+    return gamma
+
+
+@njit
 def compute_action_contribution(links, x, mu, gamma, beta):
     d = links.shape[1]
     N = np.int32(links.shape[0] ** (1 / d))
@@ -191,7 +234,7 @@ def pick_random_matrix(random_matrices):
 
 
 @njit
-def update_link(links, x, mu, hits, beta, random_matrices):
+def update_link(links, x, mu, hits, beta, random_matrices, u0, improved):
     d = links.shape[1]
     N = np.int32(links.shape[0] ** (1 / d))
     assert x.shape == (d,)
@@ -199,7 +242,10 @@ def update_link(links, x, mu, hits, beta, random_matrices):
     assert hits > 0
     U = get_node(links, x)[mu]
     i = encode_index(x, N, d)
-    gamma = compute_gamma(links, x, mu)
+    if improved is True:
+        gamma = compute_gamma_improved(links, x, mu, u0)
+    else:
+        gamma = compute_gamma(links, x, mu)
     for _ in range(hits):
         old_U = np.copy(U)
 
@@ -211,28 +257,28 @@ def update_link(links, x, mu, hits, beta, random_matrices):
 
 
 @njit
-def update_lattice(links, hits, beta, random_matrices):
+def update_lattice(links, hits, beta, random_matrices, u0, improved):
     d = links.shape[1]
     N = np.int32(links.shape[0] ** (1 / d))
-    # sweep through all of the links
+
     for i in range(N**d):
         for mu in range(d):
-            update_link(links, decode_index(i, N, d), mu, hits, beta, random_matrices)
+            update_link(links, decode_index(i, N, d), mu, hits, beta, random_matrices, u0, improved)
 
 
 @njit
-def generate_wilson_samples(links, x, steps, N_cf, N_cor, hits, thermalization_its, bin_size, beta, random_matrices):
+def generate_wilson_samples(links, x, steps, N_cf, N_cor, hits, thermalization_its, bin_size, beta, random_matrices, u0, improved):
     d = links.shape[1]
     N = np.int32(links.shape[0] ** (1 / d))
     N_bins = int(np.ceil(N_cf / bin_size))
     wilson_samples = np.zeros(N_bins, dtype=np.float64)
     bin_samples = np.zeros(bin_size, dtype=np.float64)
     for _ in range(thermalization_its * N_cor):  # thermalization
-        update_lattice(links, hits, beta, random_matrices)
+        update_lattice(links, hits, beta, random_matrices, u0, improved)
     for i in range(N_cf):
         print(f"{i}/{N_cf}")
         for _ in range(N_cor):  # discard N_cor values
-            update_lattice(links, hits, beta, random_matrices)
+            update_lattice(links, hits, beta, random_matrices, u0, improved)
         path = compute_path(links, x, steps)
         bin_samples[i % bin_size] = 1 / 3 * np.real(np.trace(path))
         if (i + 1) % bin_size == 0 or i == N_cf - 1:
@@ -241,14 +287,14 @@ def generate_wilson_samples(links, x, steps, N_cf, N_cor, hits, thermalization_i
 
 
 @njit
-def compute_path_integral_average(links, x, steps, N_cf, N_cor, hits, thermalization_its, N_copies, bin_size, beta, random_matrices):
+def compute_path_integral_average(links, x, steps, N_cf, N_cor, hits, thermalization_its, N_copies, bin_size, beta, random_matrices, u0, improved):
     d = links.shape[1]
     N = np.int32(links.shape[0] ** (1 / d))
 
     assert N_copies <= N_cf
     assert bin_size <= N_cf
 
-    wilson_samples = generate_wilson_samples(links, x, steps, N_cf, N_cor, hits, thermalization_its, bin_size, beta, random_matrices)
+    wilson_samples = generate_wilson_samples(links, x, steps, N_cf, N_cor, hits, thermalization_its, bin_size, beta, random_matrices, u0, improved)
     N_bins = int(np.ceil(N_cf / bin_size))  # if bin_size == 1, then N_bins == N_cf
     if N_copies > 1:  # bootstrap procedure
         bootstrap_avgs = np.zeros(N_copies, dtype=np.float64)
