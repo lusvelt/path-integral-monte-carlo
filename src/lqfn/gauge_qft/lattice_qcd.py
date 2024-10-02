@@ -270,19 +270,25 @@ def update_lattice(links, hits, beta, random_matrices, u0, improved):
 def generate_wilson_samples(links, x, steps, N_cf, N_cor, hits, thermalization_its, bin_size, beta, random_matrices, u0, improved):
     d = links.shape[1]
     N = np.int32(links.shape[0] ** (1 / d))
+    n_loops_to_compute = 1
+    if len(steps.shape) > 1:
+        n_loops_to_compute = steps.shape[0]
+
     N_bins = int(np.ceil(N_cf / bin_size))
-    wilson_samples = np.zeros(N_bins, dtype=np.float64)
-    bin_samples = np.zeros(bin_size, dtype=np.float64)
+    wilson_samples = np.zeros((N_bins, n_loops_to_compute), dtype=np.float64)
+    bin_samples = np.zeros((bin_size, n_loops_to_compute), dtype=np.float64)
     for _ in range(thermalization_its * N_cor):  # thermalization
         update_lattice(links, hits, beta, random_matrices, u0, improved)
     for i in range(N_cf):
         print(f"{i}/{N_cf}")
         for _ in range(N_cor):  # discard N_cor values
             update_lattice(links, hits, beta, random_matrices, u0, improved)
-        path = compute_path(links, x, steps)
-        bin_samples[i % bin_size] = 1 / 3 * np.real(np.trace(path))
+        for j in range(n_loops_to_compute):
+            path = compute_path(links, x, steps[j, :])
+            bin_samples[i % bin_size][j] = 1 / 3 * np.real(np.trace(path))
         if (i + 1) % bin_size == 0 or i == N_cf - 1:
-            wilson_samples[i // bin_size] = bin_samples.mean()
+            for j in range(n_loops_to_compute):
+                wilson_samples[i // bin_size][j] = bin_samples[:, j].mean()
     return wilson_samples
 
 
@@ -294,18 +300,45 @@ def compute_path_integral_average(links, x, steps, N_cf, N_cor, hits, thermaliza
     assert N_copies <= N_cf
     assert bin_size <= N_cf
 
+    n_loops_to_compute = 1
+    if len(steps.shape) > 1:
+        n_loops_to_compute = steps.shape[0]
+
     wilson_samples = generate_wilson_samples(links, x, steps, N_cf, N_cor, hits, thermalization_its, bin_size, beta, random_matrices, u0, improved)
     N_bins = int(np.ceil(N_cf / bin_size))  # if bin_size == 1, then N_bins == N_cf
     if N_copies > 1:  # bootstrap procedure
-        bootstrap_avgs = np.zeros(N_copies, dtype=np.float64)
+        bootstrap_avgs = np.zeros((N_copies, n_loops_to_compute), dtype=np.float64)
         for i in range(N_copies):
-            values = np.zeros(N_bins, dtype=np.float64)
+            values = np.zeros((N_bins, n_loops_to_compute), dtype=np.float64)
             for j in range(N_bins):
                 index_of_copied_value = int(np.random.uniform(0, N_bins))
-                values[j] = wilson_samples[index_of_copied_value]
-            bootstrap_avgs[i] = values.mean()
-        return np.array([bootstrap_avgs.mean(), bootstrap_avgs.std()], dtype=np.float64)
-    else:
-        avg = wilson_samples.mean()
-        std = wilson_samples.std() / np.sqrt(N_bins)
-        return np.array([avg, std], dtype=np.float64)
+                for k in range(n_loops_to_compute):
+                    values[j, k] = wilson_samples[index_of_copied_value, k]
+            for k in range(n_loops_to_compute):
+                bootstrap_avgs[i, k] = values[:, k].mean()
+        wilson_samples = bootstrap_avgs
+    results = np.zeros((n_loops_to_compute, 2), dtype=np.float64)  # for each Wilson loop, get avg and err
+    for k in n_loops_to_compute:
+        results[k, 0] = wilson_samples[:, k].mean()
+        results[k, 1] = wilson_samples[:, k].std()
+    return results
+
+
+def get_steps_for_rectangle(width, height, mu, nu):
+    assert 1 <= width
+    assert 1 <= height
+    assert 0 <= mu
+    assert 0 <= nu
+    s1 = mu + 1
+    s2 = nu + 1
+    length = 2 * (width + height)
+    steps = np.zeros(length, dtype=np.int32)
+    for i in range(width):
+        steps[i] = s1
+    for i in range(width, width + height):
+        steps[i] = s2
+    for i in range(width + height, 2 * width + height):
+        steps[i] = -s1
+    for i in range(2 * width + height, length):
+        steps[i] = -s2
+    return steps
