@@ -185,13 +185,13 @@ def compute_gamma_improved(links, x, mu, u0):
     x[mu] += 1
     if x[mu] >= N:
         x[mu] -= N
-    # there are 6 rectangles for each direction
+    # there are 8 rectangles for each direction
     for nu in range(d):
         if nu != mu:
             # remaining path
             s1 = mu + 1
             s2 = nu + 1
-            plaquette_path_forward = compute_path(links, x, np.array([s2, -s1, s2], dtype=np.int32))
+            plaquette_path_forward = compute_path(links, x, np.array([s2, -s1, -s2], dtype=np.int32))
             plaquette_path_backward = compute_path(links, x, np.array([-s2, -s1, s2], dtype=np.int32))
 
             rectangles_steps = np.array(
@@ -213,7 +213,7 @@ def compute_gamma_improved(links, x, mu, u0):
             for i in range(rectangle_paths.shape[0]):
                 rectangle_contributions += rectangle_paths[i]
             plaquette_contributions = plaquette_path_forward + plaquette_path_backward
-            gamma += 5 / 3 * plaquette_contributions - 1 / u0**2 * 1 / 12 * rectangle_contributions
+            gamma += 5 / (3 * u0**4) * plaquette_contributions - 1 / u0**6 * 1 / 12 * rectangle_contributions
     return gamma
 
 
@@ -247,8 +247,8 @@ def update_link(links, x, mu, hits, beta, random_matrices, u0, improved):
     else:
         gamma = compute_gamma(links, x, mu)
     for _ in range(hits):
-        old_U = np.copy(U)
 
+        old_U = np.copy(U)
         M = pick_random_matrix(random_matrices)
         links[i][mu] = M @ links[i][mu]
         dS = -beta / 3 * np.real(np.trace((links[i][mu] - old_U) @ gamma))
