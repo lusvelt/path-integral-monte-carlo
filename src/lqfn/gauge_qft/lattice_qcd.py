@@ -3,7 +3,7 @@ This module contains functions to compute quantities in lattice QCD.
 """
 
 import numpy as np
-from numba import njit
+from numba import njit, prange
 
 
 @njit
@@ -15,7 +15,7 @@ def factorial(n):
 
 
 @njit
-def generate_random_SU3_update_matrix(eps, taylor_order=20):
+def generate_random_SU3_update_matrix(eps, taylor_order=50):
     assert 0 < eps < 1
     M = np.zeros((3, 3), dtype=np.complex128)
     H = np.zeros((3, 3), dtype=np.complex128)
@@ -50,11 +50,10 @@ def decode_index(index, N, d):
 
 @njit
 def encode_index(x, N, d):
-    result = np.zeros(d, dtype=np.int32)
     result = 0
     for i in range(d):
         result += N**i * x[i]
-    return result
+    return np.int32(result)
 
 
 @njit
@@ -118,14 +117,15 @@ def compute_path(links, x_start, steps):
     Us = np.identity(3, dtype=np.complex128)
     x = np.copy(x_start)
     for step in steps:
-        Us = Us @ get_link(links, x, step)
-        mu = np.abs(step) - 1
-        x[mu] += np.sign(step)
-        # Implement periodic boundary conditions
-        if x[mu] >= N:
-            x[mu] -= N
-        elif x[mu] < 0:
-            x[mu] += N
+        if step != 0:
+            Us = Us @ get_link(links, x, step)
+            mu = np.abs(step) - 1
+            x[mu] += np.sign(step)
+            # Implement periodic boundary conditions
+            if x[mu] >= N:
+                x[mu] -= N
+            elif x[mu] < 0:
+                x[mu] += N
     return Us
 
 
@@ -156,8 +156,6 @@ def compute_gamma(links, x, mu):
     d = links.shape[1]
     N = np.int32(links.shape[0] ** (1 / d))
     # Computes the Gamma (113) in the paper, given a link specified as start point and direction mu
-    assert x.shape == (d,)
-    assert 0 <= mu < d
     gamma = np.zeros((3, 3), dtype=np.complex128)
     x[mu] += 1
     if x[mu] >= N:
@@ -179,8 +177,6 @@ def compute_gamma_improved(links, x, mu, u0):
     d = links.shape[1]
     N = np.int32(links.shape[0] ** (1 / d))
     # Computes the Gamma (113) in the paper, given a link specified as start point and direction mu
-    assert x.shape == (d,)
-    assert 0 <= mu < d
     gamma = np.zeros((3, 3), dtype=np.complex128)
     x[mu] += 1
     if x[mu] >= N:
@@ -213,7 +209,7 @@ def compute_gamma_improved(links, x, mu, u0):
             for i in range(rectangle_paths.shape[0]):
                 rectangle_contributions += rectangle_paths[i]
             plaquette_contributions = plaquette_path_forward + plaquette_path_backward
-            gamma += 5 / (3 * u0**4) * plaquette_contributions - 1 / u0**6 * 1 / 12 * rectangle_contributions
+            gamma += 5 / 3 * 1 / u0**4 * plaquette_contributions - 1 / u0**6 * 1 / 12 * rectangle_contributions
     return gamma
 
 
@@ -237,9 +233,6 @@ def pick_random_matrix(random_matrices):
 def update_link(links, x, mu, hits, beta, random_matrices, u0, improved):
     d = links.shape[1]
     N = np.int32(links.shape[0] ** (1 / d))
-    assert x.shape == (d,)
-    assert 0 <= mu < d
-    assert hits > 0
     U = get_node(links, x)[mu]
     i = encode_index(x, N, d)
     if improved is True:
@@ -247,7 +240,6 @@ def update_link(links, x, mu, hits, beta, random_matrices, u0, improved):
     else:
         gamma = compute_gamma(links, x, mu)
     for _ in range(hits):
-
         old_U = np.copy(U)
         M = pick_random_matrix(random_matrices)
         links[i][mu] = M @ links[i][mu]
@@ -267,46 +259,52 @@ def update_lattice(links, hits, beta, random_matrices, u0, improved):
 
 
 @njit
-def generate_wilson_samples(links, x, steps, N_cf, N_cor, hits, thermalization_its, bin_size, beta, random_matrices, u0, improved):
+def generate_wilson_samples(links, steps, N_cf, N_cor, hits, thermalization_its, bin_size, beta, random_matrices, u0, improved):
     d = links.shape[1]
     N = np.int32(links.shape[0] ** (1 / d))
-    n_loops_to_compute = 1
-    if len(steps.shape) > 1:
-        n_loops_to_compute = steps.shape[0]
+    n_loops_to_compute = steps.shape[0]
 
     N_bins = int(np.ceil(N_cf / bin_size))
     wilson_samples = np.zeros((N_bins, n_loops_to_compute), dtype=np.float64)
     bin_samples = np.zeros((bin_size, n_loops_to_compute), dtype=np.float64)
-    for _ in range(thermalization_its * N_cor):  # thermalization
-        update_lattice(links, hits, beta, random_matrices, u0, improved)
+    for i in range(thermalization_its):  # thermalization
+        print(f"{i}/{thermalization_its} thermalization iteration")
+        for _ in range(N_cor):
+            update_lattice(links, hits, beta, random_matrices, u0, improved)
     for i in range(N_cf):
         print(f"{i}/{N_cf}")
         for _ in range(N_cor):  # discard N_cor values
             update_lattice(links, hits, beta, random_matrices, u0, improved)
         for j in range(n_loops_to_compute):
-            path = compute_path(links, x, steps[j, :])
-            bin_samples[i % bin_size][j] = 1 / 3 * np.real(np.trace(path))
+            # sweep through all possible loops of the current kind in the lattice
+            value = 0
+            for k in range(N**d):
+                y = decode_index(k, N, d)
+                path = compute_path(links, y, steps[j, :])
+                value += 1 / 3 * np.real(np.trace(path))
+            value /= N**d
+            bin_samples[i % bin_size][j] = value
         if (i + 1) % bin_size == 0 or i == N_cf - 1:
             for j in range(n_loops_to_compute):
                 wilson_samples[i // bin_size][j] = bin_samples[:, j].mean()
+                print(wilson_samples[i // bin_size][j])
     return wilson_samples
 
 
-@njit
-def compute_path_integral_average(links, x, steps, N_cf, N_cor, hits, thermalization_its, N_copies, bin_size, beta, random_matrices, u0, improved):
+@njit(parallel=True)
+def compute_path_integral_average(links, steps, N_cf, N_cor, hits, thermalization_its, N_copies, bin_size, beta, random_matrices, u0, improved):
     d = links.shape[1]
     N = np.int32(links.shape[0] ** (1 / d))
 
     assert N_copies <= N_cf
     assert bin_size <= N_cf
 
-    n_loops_to_compute = 1
-    if len(steps.shape) > 1:
-        n_loops_to_compute = steps.shape[0]
+    n_loops_to_compute = steps.shape[0]
 
-    wilson_samples = generate_wilson_samples(links, x, steps, N_cf, N_cor, hits, thermalization_its, bin_size, beta, random_matrices, u0, improved)
+    wilson_samples = generate_wilson_samples(links, steps, N_cf, N_cor, hits, thermalization_its, bin_size, beta, random_matrices, u0, improved)
     N_bins = int(np.ceil(N_cf / bin_size))  # if bin_size == 1, then N_bins == N_cf
-    if N_copies > 1:  # bootstrap procedure
+    # bootstrap procedure
+    if N_copies > 1:
         bootstrap_avgs = np.zeros((N_copies, n_loops_to_compute), dtype=np.float64)
         for i in range(N_copies):
             values = np.zeros((N_bins, n_loops_to_compute), dtype=np.float64)
@@ -317,13 +315,10 @@ def compute_path_integral_average(links, x, steps, N_cf, N_cor, hits, thermaliza
             for k in range(n_loops_to_compute):
                 bootstrap_avgs[i, k] = values[:, k].mean()
         wilson_samples = bootstrap_avgs
-    results = np.zeros((n_loops_to_compute, 2), dtype=np.float64)  # for each Wilson loop, get avg and err
-    for k in n_loops_to_compute:
-        results[k, 0] = wilson_samples[:, k].mean()
-        results[k, 1] = wilson_samples[:, k].std()
-    return results
+    return wilson_samples
 
 
+@njit
 def get_steps_for_rectangle(width, height, mu, nu):
     assert 1 <= width
     assert 1 <= height
@@ -342,3 +337,80 @@ def get_steps_for_rectangle(width, height, mu, nu):
     for i in range(2 * width + height, length):
         steps[i] = -s2
     return steps
+
+
+# computes a^2 \Delta^2 U
+@njit
+def compute_gauge_covariant_derivative(links, x, mu, u0):
+    d = links.shape[1]
+    N = np.int32(links.shape[0] ** (1 / d))
+    D = np.zeros((3, 3), dtype=np.complex128)
+    for rho in range(d):
+        s1 = mu + 1
+        s2 = rho + 1
+        path1 = compute_path(links, x, np.array([s2, s1, -s2]))
+        path2 = compute_path(links, x, np.array([-s2, s1, s2]))
+        path3 = -2 * u0**2 * get_link(links, x, s1)
+        D += path1 + path2 + path3
+    return D / u0**2
+
+
+@njit
+def smear_matrix(links, x, mu, u0, eps, n):
+    d = links.shape[1]
+    N = np.int32(links.shape[0] ** (1 / d))
+    i = encode_index(x, N, d)
+    links[i][mu] = np.identity(3) + eps * compute_gauge_covariant_derivative(links, x, mu, u0)
+    if n > 1:
+        smear_matrix(links, x, mu, u0, eps, n - 1)
+
+
+@njit
+def smear_links(links, mu, u0, eps, n):
+    d = links.shape[1]
+    N = np.int32(links.shape[0] ** (1 / d))
+    old_links = np.copy(links)
+    new_links = np.zeros_like(links)
+    for i in range(links.shape[0]):
+        x = decode_index(i, N, d)
+        links = np.copy(old_links)
+        smear_matrix(links, x, mu, u0, eps, n)
+        new_links[i, mu] = np.copy(links[i, mu])
+
+
+@njit(parallel=True)
+def compute_static_quark_potential(
+    N, d, N_cf, N_cor, hits, thermalization_its, N_copies, bin_size, beta, random_matrices, u0, improved, eps_smearing=0.0, n_smearing=0
+):
+    links = create_lattice_links(N, d)
+    if eps_smearing != 0.0 and n_smearing != 0:
+        # Smear all spatial directions
+        for mu in range(1, d):
+            smear_links(links, mu, u0, eps_smearing, n_smearing)
+    rs = np.arange(1, N)
+    results = np.zeros((N - 1, N_copies, 2), dtype=np.float64)
+
+    def compute_single_value(i):
+        r = rs[i]
+        l = np.copy(links)
+        loops = np.zeros((2, 2 * (N - 1 + r)), dtype=np.int32)
+        # t loop
+        steps_t = get_steps_for_rectangle(N - 2, r, 0, 1)
+        for j in prange(steps_t.shape[0]):
+            loops[0, j] = steps_t[j]
+        # t+a loop
+        loops[1] = get_steps_for_rectangle(N - 1, r, 0, 1)
+        print(loops)
+        result = compute_path_integral_average(
+            l, loops, N_cf, N_cor, hits, thermalization_its, N_copies, bin_size, beta, random_matrices, u0, improved
+        )
+        return result
+
+    for i in range(N - 1):
+        results[i] = compute_single_value(i)
+
+    V_bootstrap = np.zeros((N_copies, N - 1), dtype=np.float64)
+    for i in range(N_copies):
+        for j in range(N - 1):
+            V_bootstrap[i, j] = np.log(np.abs(results[j, i, 0] / results[j, i, 1]))
+    return V_bootstrap
