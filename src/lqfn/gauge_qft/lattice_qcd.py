@@ -9,6 +9,18 @@ from .combinatorics import *
 
 @njit
 def generate_random_SU3_update_matrix(eps, taylor_order=50):
+    """
+    Generates a random SU(3) matrix $M$ such that
+    $$M = \\exp(i \\epsilon H)$$,
+    where $H$ is a random Hermitian matrix with values +1 or -1.
+
+    Args:
+        eps (float): $\\epsilon$ parameter for the update of the matrix.
+        taylor_order (int, optional): order of the Taylor expansion to compute the exponential. Default is 50.
+
+    Returns:
+        numpy.ndarray[complex, 3, 3]: The generated SU(3) matrix.
+    """
     assert 0 < eps < 1
     M = np.zeros((3, 3), dtype=np.complex128)
     H = np.zeros((3, 3), dtype=np.complex128)
@@ -24,6 +36,16 @@ def generate_random_SU3_update_matrix(eps, taylor_order=50):
 
 @njit
 def generate_update_matrices_set(N, eps):
+    """
+    Assign an update matrix for every lattice link.
+
+    Args:
+        N (int): number of lattice sites in each direction.
+        eps (float): $\\epsilon$ parameter for the update of the matrix.
+
+    Returns:
+        numpy.ndarray[complex, N * 2, 3, 3]: The generated set of update matrices.
+    """
     assert 0 < eps < 1
     s = np.zeros((N * 2, 3, 3), dtype=np.complex128)
     for i in range(N):
@@ -34,6 +56,17 @@ def generate_update_matrices_set(N, eps):
 
 @njit
 def decode_index(index, N, d):
+    """
+    Decodes an index into a multi-index.
+
+    Args:
+        index (int): the index to be decoded.
+        N (int): the number of lattice sites in each direction.
+        d (int): the number of dimensions of the lattice.
+
+    Returns:
+        numpy.ndarray[int, d]: The multi-index corresponding to the given index.
+    """
     result = np.zeros(d, dtype=np.int32)
     for i in range(d):
         result[i] = index % N
@@ -43,6 +76,17 @@ def decode_index(index, N, d):
 
 @njit
 def encode_index(x, N, d):
+    """
+    Encodes a multi-index into an index.
+
+    Args:
+        x(numpy.ndarray[int, d]): the multi-index to be encoded.
+        N(int): the number of lattice sites in each direction.
+        d(int): the number of dimensions of the lattice.
+
+    Returns:
+        int: the index corresponding to the given multi-index.
+    """
     result = 0
     for i in range(d):
         result += N**i * x[i]
@@ -51,6 +95,16 @@ def encode_index(x, N, d):
 
 @njit
 def create_lattice_links(N, d):
+    """
+    Creates the lattice links.
+
+    Args:
+        N(int): the number of lattice sites in each direction.
+        d(int): the number of dimensions of the lattice.
+
+    Returns:
+        numpy.ndarray[complex, N^d, d, 3, 3]: the lattice links.
+    """
     shape = (N**d, d, 3, 3)
     links = np.zeros(shape, dtype=np.complex128)
     for i in range(N**d):
@@ -68,6 +122,16 @@ def create_lattice_links(N, d):
 
 @njit
 def get_node(links, x):
+    """
+    Returns the node at a given multi-index.
+
+    Args:
+        links(numpy.ndarray[complex, N^d, d, 3, 3]): The lattice links.
+        x(numpy.ndarray[int, d]): The multi-index of the node.
+
+    Returns:
+        numpy.ndarray[complex, d, 3, 3]: the node at the given multi-index.
+    """
     d = links.shape[1]
     N = np.int32(links.shape[0] ** (1 / d))
     # Returns a numpy array containing d matrices, one for each spacetime direction
@@ -77,6 +141,17 @@ def get_node(links, x):
 
 @njit
 def get_link(links, x, step):
+    """
+    Returns the U matrix of a given node along the direction given from the variable step.
+
+    Args:
+        links(numpy.ndarray[complex, N^d, d, 3, 3]): The lattice links.
+        x(numpy.ndarray[int, d]): The multi-index of the node.
+        step(int): The step to be taken.
+
+    Returns:
+        numpy.ndarray[complex, 3, 3]: The U matrix.
+    """
     # Returns the U matrix
     # step is an integer from 1 to d
     # if the step is +, then it's forward in that direction, if it's - then it's backwards
@@ -102,6 +177,17 @@ def get_link(links, x, step):
 
 @njit
 def compute_path(links, x_start, steps):
+    """
+    Computes the path along a given set of steps starting from a given node and link.
+
+    Args:
+        links(numpy.ndarray[complex, N^d, d, 3, 3]): The lattice links.
+        x_start(numpy.ndarray[int, d]): the starting node.
+        steps(numpy.ndarray[int, n]): The steps to be taken.
+
+    Returns:
+        numpy.ndarray[complex, 3, 3]: the path along the given steps.
+    """
     # start_x is a lattice multi_index
     # steps is an array of steps: each step is +/- mu, where mu is a spacetime index from 1 to d
     d = links.shape[1]
@@ -124,6 +210,18 @@ def compute_path(links, x_start, steps):
 
 @njit
 def compute_plaquette(links, mu, nu, x):
+    """
+    Computes the plaquette at a given node and direction.
+
+    Args:
+        links(numpy.ndarray[complex, N^d, d, 3, 3]): the lattice links.
+        mu(int): the first direction.
+        nu(int): the second direction.
+        x(numpy.ndarray[int, d]): the multi-index of the node.
+
+    Returns:
+        float: the value of the plaquette.
+    """
     s1 = mu + 1
     s2 = nu + 1
     steps = [s1, s2, -s1, -s2]
@@ -133,6 +231,16 @@ def compute_plaquette(links, mu, nu, x):
 
 @njit
 def compute_wilson_action(links, beta):
+    """
+    Computes the non improve Wilson action.
+
+    Args:
+        links(numpy.ndarray[complex, N^d, d, 3, 3]): the lattice links.
+        beta(float): the beta parameter that enters in the calculation of the Wilson action.
+
+    Returns:
+        float: the value of the Wilson action.
+    """
     d = links.shape[1]
     N = np.int32(links.shape[0] ** (1 / d))
     P = 0
@@ -146,6 +254,17 @@ def compute_wilson_action(links, beta):
 
 @njit
 def compute_gamma(links, x, mu):
+    """
+    Computes the Gamma matrix at a given node and direction.
+
+    Args:
+        links(numpy.ndarray[complex, N^d, d, 3, 3]): the lattice links.
+        x(numpy.ndarray[int, d]): the multi-index of the node.
+        mu(int): the direction.
+
+    Returns:
+        numpy.ndarray[complex, 3, 3]: the Gamma matrix.
+    """
     d = links.shape[1]
     N = np.int32(links.shape[0] ** (1 / d))
     # Computes the Gamma (113) in the paper, given a link specified as start point and direction mu
@@ -167,6 +286,17 @@ def compute_gamma(links, x, mu):
 
 @njit
 def compute_gamma_improved(links, x, mu, u0):
+    """
+    Computes the improve Gamma matrix at a given node and direction, meaning that there are both plaquettes and rectangles inside gamma.
+
+    Args:
+        links(numpy.ndarray[complex, N^d, d, 3, 3]): the lattice links.
+        x(numpy.ndarray[int, d]): the multi-index of the node.
+        mu(int): the direction.
+
+    Returns:
+        numpy.ndarray[complex, 3, 3]: the Gamma matrix.
+    """
     d = links.shape[1]
     N = np.int32(links.shape[0] ** (1 / d))
     # Computes the Gamma (113) in the paper, given a link specified as start point and direction mu
@@ -208,6 +338,19 @@ def compute_gamma_improved(links, x, mu, u0):
 
 @njit
 def compute_action_contribution(links, x, mu, gamma, beta):
+    """
+    Computes the action contribution at a given node and direction given a Gamma matrix.
+
+    Args:
+        links(numpy.ndarray[complex, N^d, d, 3, 3]): the lattice links.
+        x(numpy.ndarray[int, d]): the multi-index of the node.
+        mu(int): the direction.
+        gamma(numpy.ndarray[complex, 3, 3]): the Gamma matrix.
+        beta(float): the beta parameter that enters in the calculation of the Wilson action.
+
+    Returns:
+        float: the value of the action contribution.
+    """
     d = links.shape[1]
     N = np.int32(links.shape[0] ** (1 / d))
     assert x.shape == (d,)
@@ -218,12 +361,34 @@ def compute_action_contribution(links, x, mu, gamma, beta):
 
 @njit
 def pick_random_matrix(random_matrices):
+    """
+    Picks a random matrix from a given set of matrices.
+
+    Args:
+        random_matrices(numpy.ndarray[complex, N * 2, 3, 3]): the set of random matrices.
+
+    Returns:
+        numpy.ndarray[complex, 3, 3]: the picked random matrix.
+    """
     i = np.random.choice(random_matrices.shape[0])
     return random_matrices[i]
 
 
 @njit
 def update_link(links, x, mu, hits, beta, random_matrices, u0, improved):
+    """
+    Updates a link at a given node and direction. Each link is updated hits number of times.
+
+    Args:
+        links(numpy.ndarray[complex, N^d, d, 3, 3]): the lattice links.
+        x(numpy.ndarray[int, d]): the multi-index of the node.
+        mu(int): the direction.
+        hits(int): the number of updates.
+        beta(float): the beta parameter that enters in the calculation of the Wilson action.
+        random_matrices(numpy.ndarray[complex, N * 2, 3, 3]): the set of random matrices.
+        u0(float): the u0 parameter that enters in the calculation of the Wilson action.
+        improved(bool): whether to use the improved Gamma matrix or not.
+    """
     d = links.shape[1]
     N = np.int32(links.shape[0] ** (1 / d))
     U = get_node(links, x)[mu]
@@ -243,6 +408,17 @@ def update_link(links, x, mu, hits, beta, random_matrices, u0, improved):
 
 @njit
 def update_lattice(links, hits, beta, random_matrices, u0, improved):
+    """
+    Updates the lattice links.
+
+    Args:
+        links(numpy.ndarray[complex, N^d, d, 3, 3]): the lattice links.
+        hits(int): the number of updates.
+        beta(float): the beta parameter that enters in the calculation of the Wilson action.
+        random_matrices(numpy.ndarray[complex, N * 2, 3, 3]): the set of random matrices.
+        u0(float): the u0 parameter that enters in the calculation of the Wilson action.
+        improved(bool): whether to use the improved Gamma matrix or not.
+    """
     d = links.shape[1]
     N = np.int32(links.shape[0] ** (1 / d))
 
@@ -253,6 +429,26 @@ def update_lattice(links, hits, beta, random_matrices, u0, improved):
 
 @njit
 def generate_wilson_samples(links, loops, N_cf, N_cor, hits, thermalization_its, bin_size, beta, random_matrices, u0, improved, rotate_time=True):
+    """
+    Computes the metropolis algorithm to calculate Wilson loop average and its error.
+
+    Args:
+        links(numpy.ndarray[complex, N^d, d, 3, 3]): the lattice links.
+        loops(numpy.ndarray[int, n, d]): the list of loops to compute.
+        N_cf(int): the total number of samples contributing to be saved during the process for computing the path integral average.
+        N_cor(int): the number of path updates before picking each sample.
+        hits(int): the number of updates.
+        thermalization_its(int): the number of samples to be discarded at the beginning to let the procedure thermalize.
+        bin_size(int): the number of samples to be averaged in a single bin.
+        beta(float): the beta parameter that enters in the calculation of the Wilson action.
+        random_matrices(numpy.ndarray[complex, N * 2, 3, 3]): the set of random matrices.
+        u0(float): the u0 parameter that enters in the calculation of the Wilson action.
+        improved(bool): whether to use the improved Gamma matrix or not.
+        rotate_time(bool): whether or not to rotate time dimension when exploiting rotational symmetry of the lattice (if spatial directions have been smeared, set this to False).
+
+    Returns:
+        numpy.ndarray[float, N_bins, steps.shape[0]]: the matrix of Wilson loop samples.
+    """
     d = links.shape[1]
     N = np.int32(links.shape[0] ** (1 / d))
     n_loops_to_compute = loops.shape[0]
@@ -309,6 +505,28 @@ def generate_wilson_samples(links, loops, N_cf, N_cor, hits, thermalization_its,
 def compute_path_integral_average(
     links, loops, N_cf, N_cor, hits, thermalization_its, N_copies, bin_size, beta, random_matrices, u0, improved, rotate_time=True
 ):
+    """
+    Computes the metropolis algorithm to calculate Wilson loop average and its error; if N_copies is greater than one than it uses bootstrap procedure.
+
+    Args:
+        links(numpy.ndarray[complex, N^d, d, 3, 3]): the lattice links.
+        loops(numpy.ndarray[int, n, d]): the list of loops to compute.
+        N_cf(int): the total number of samples contributing to be saved during the process for computing the path integral average.
+        N_cor(int): the number of path updates before picking each sample.
+        hits(int): the number of updates.
+        thermalization_its(int): the number of samples to be discarded at the beginning to let the procedure thermalize.
+        N_copies(int): the number of copies for the bootstrap procedure.
+        bin_size(int): the number of samples to be averaged in a single bin.
+        beta(float): the beta parameter that enters in the calculation of the Wilson action.
+        random_matrices(numpy.ndarray[complex, N * 2, 3, 3]): the set of random matrices.
+        u0(float): the u0 parameter that enters in the calculation of the Wilson action.
+        improved(bool): whether to use the improved Gamma matrix or not.
+        rotate_time(bool): whether or not to rotate time dimension when exploiting rotational symmetry of the lattice (if spatial directions have been smeared, set this to False).
+    Returns:
+        float: average of the Wilson loops.
+        float: error of the average of the Wilson loops.
+    """
+
     d = links.shape[1]
     N = np.int32(links.shape[0] ** (1 / d))
 
@@ -338,6 +556,18 @@ def compute_path_integral_average(
 
 @njit
 def get_steps_for_rectangle(width, height, mu, nu):
+    """
+    Returns the steps for a rectangle.
+
+    Args:
+        width(int): the width of the rectangle.
+        height(int): the height of the rectangle.
+        mu(int): the first direction.
+        nu(int): the second direction.
+
+    Returns:
+        numpy.ndarray[int, 2 * (width + height)]: the steps for the rectangle.
+    """
     assert 1 <= width
     assert 1 <= height
     assert 0 <= mu
@@ -375,6 +605,18 @@ def get_nonplanar_steps(widths):
 # computes a^2 \Delta^2 U
 @njit
 def compute_gauge_covariant_derivative(links, x, mu, u0):
+    """
+    Computes the gauge covariant derivative at a given node and direction.
+
+    Args:
+        links(numpy.ndarray[complex, N^d, d, 3, 3]): the lattice links.
+        x(numpy.ndarray[int, d]): the multi-index of the node.
+        mu(int): the direction.
+        u0(float): the u0 parameter that enters in the calculation of the Wilson action.
+
+    Returns:
+        numpy.ndarray[complex, 3, 3]: the gauge covariant derivative.
+    """
     d = links.shape[1]
     N = np.int32(links.shape[0] ** (1 / d))
     D = np.zeros((3, 3), dtype=np.complex128)
@@ -436,6 +678,20 @@ def smear_matrix(old_links, new_links, x, mu, u0, eps):
 
 @njit
 def smear_links(links, mu, u0, eps, n):
+    """
+    Smears all the links in a given direction.
+
+    Args:
+        links(numpy.ndarray[complex, N^d, d, 3, 3]): the lattice links.
+        mu(int): the direction.
+        u0(float): the u0 parameter that enters in the calculation of the Wilson action.
+        eps(float): the epsilon parameter for the calculation of the smeared matrix.
+        n(int): the number of updates.
+
+    Returns:
+        numpy.ndarray[complex, N^d, d, 3, 3]: the smeared links.
+
+    """
     d = links.shape[1]
     N = np.int32(links.shape[0] ** (1 / d))
 
@@ -450,6 +706,8 @@ def smear_links(links, mu, u0, eps, n):
     return new_links
 
 
+# perchè c'è una funzione dentro una funzione??(i punti interrogativi me li ha suggeriti copilot)
+@njit(parallel=True)
 def compute_static_quark_potential(
     N,
     d,
