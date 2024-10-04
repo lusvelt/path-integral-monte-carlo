@@ -2,10 +2,9 @@ IMPORTANT:
 - Document that functionals should be decorated with @njit
 - Document also private methods, at least comment them
 - Explain better what we are doing (in all jupyter notebooks)
-- Plot the error (or say something about it) in propagators-computation.ipynb
-- Add axes labels in propagators-computation.ipynb
-- Write tests for all public functions
-- Implement lattice QCD
+- Comment all the code, use Copilot for help
+- Refactor static-quark-potential.ipynb
+- See why the fits in static-quark-potential.ipynb are not so good
 
 IMPROVEMENTS:
 - Refactor compute_G and plot()

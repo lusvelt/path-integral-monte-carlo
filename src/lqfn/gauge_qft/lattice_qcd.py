@@ -3,15 +3,8 @@ This module contains functions to compute quantities in lattice QCD.
 """
 
 import numpy as np
-from numba import njit, prange
-
-
-@njit
-def factorial(n):
-    f = 1
-    for i in range(1, n + 1):
-        f *= i
-    return f
+from numba import njit
+from .combinatorics import *
 
 
 @njit
@@ -259,49 +252,74 @@ def update_lattice(links, hits, beta, random_matrices, u0, improved):
 
 
 @njit
-def generate_wilson_samples(links, steps, N_cf, N_cor, hits, thermalization_its, bin_size, beta, random_matrices, u0, improved):
+def generate_wilson_samples(links, loops, N_cf, N_cor, hits, thermalization_its, bin_size, beta, random_matrices, u0, improved, rotate_time=True):
     d = links.shape[1]
     N = np.int32(links.shape[0] ** (1 / d))
-    n_loops_to_compute = steps.shape[0]
+    n_loops_to_compute = loops.shape[0]
 
     N_bins = int(np.ceil(N_cf / bin_size))
     wilson_samples = np.zeros((N_bins, n_loops_to_compute), dtype=np.float64)
     bin_samples = np.zeros((bin_size, n_loops_to_compute), dtype=np.float64)
+
     for i in range(thermalization_its):  # thermalization
         print(f"{i}/{thermalization_its} thermalization iteration")
         for _ in range(N_cor):
             update_lattice(links, hits, beta, random_matrices, u0, improved)
+
+    directions_permutations = permute(np.arange(d))
+    rot_factor = factorial(d)
+    if rotate_time is False:
+        rot_factor = factorial(d - 1)
+
     for i in range(N_cf):
+
         print(f"{i}/{N_cf}")
+
         for _ in range(N_cor):  # discard N_cor values
             update_lattice(links, hits, beta, random_matrices, u0, improved)
+
         for j in range(n_loops_to_compute):
             # sweep through all possible loops of the current kind in the lattice
             value = 0
-            for k in range(N**d):
-                y = decode_index(k, N, d)
-                path = compute_path(links, y, steps[j, :])
-                value += 1 / 3 * np.real(np.trace(path))
-            value /= N**d
+            loop = loops[j, :]
+            for l in range(rot_factor):
+                partial_value = 0
+                directions = directions_permutations[l]
+                # rotate the steps in the loop onto the new axes
+                rotated_loop = np.zeros_like(loop)
+                for m in range(loop.shape[0]):
+                    rotated_loop[m] = np.sign(loop[m]) * (directions[np.abs(loop[m]) - 1] + 1)
+                for k in range(N**d):
+                    y = decode_index(k, N, d)
+                    path = compute_path(links, y, rotated_loop)
+                    partial_value += 1 / 3 * np.real(np.trace(path))
+                value += partial_value / (N**d)
+            value /= rot_factor
             bin_samples[i % bin_size][j] = value
+
         if (i + 1) % bin_size == 0 or i == N_cf - 1:
             for j in range(n_loops_to_compute):
                 wilson_samples[i // bin_size][j] = bin_samples[:, j].mean()
                 print(wilson_samples[i // bin_size][j])
+
     return wilson_samples
 
 
 @njit(parallel=True)
-def compute_path_integral_average(links, steps, N_cf, N_cor, hits, thermalization_its, N_copies, bin_size, beta, random_matrices, u0, improved):
+def compute_path_integral_average(
+    links, loops, N_cf, N_cor, hits, thermalization_its, N_copies, bin_size, beta, random_matrices, u0, improved, rotate_time=True
+):
     d = links.shape[1]
     N = np.int32(links.shape[0] ** (1 / d))
 
     assert N_copies <= N_cf
     assert bin_size <= N_cf
 
-    n_loops_to_compute = steps.shape[0]
+    n_loops_to_compute = loops.shape[0]
 
-    wilson_samples = generate_wilson_samples(links, steps, N_cf, N_cor, hits, thermalization_its, bin_size, beta, random_matrices, u0, improved)
+    wilson_samples = generate_wilson_samples(
+        links, loops, N_cf, N_cor, hits, thermalization_its, bin_size, beta, random_matrices, u0, improved, rotate_time
+    )
     N_bins = int(np.ceil(N_cf / bin_size))  # if bin_size == 1, then N_bins == N_cf
     # bootstrap procedure
     if N_copies > 1:
@@ -339,6 +357,21 @@ def get_steps_for_rectangle(width, height, mu, nu):
     return steps
 
 
+@njit
+def get_nonplanar_steps(widths):
+    # e.g. if widths == [2,3,3] then we need [+1,+1,+2,+2,+2,+3,+3,+3,-1,-1,-2,-2,-2,-3,-3,-3]
+    tot_steps = np.sum(widths) * 2
+    steps = np.zeros(tot_steps, dtype=np.int32)
+    j = 0
+    for i in range(widths.shape[0]):
+        s = i + 1
+        for _ in range(widths[i]):
+            steps[j] = s
+            steps[j + tot_steps // 2] = -s
+            j += 1
+    return steps
+
+
 # computes a^2 \Delta^2 U
 @njit
 def compute_gauge_covariant_derivative(links, x, mu, u0):
@@ -356,61 +389,150 @@ def compute_gauge_covariant_derivative(links, x, mu, u0):
 
 
 @njit
-def smear_matrix(links, x, mu, u0, eps, n):
-    d = links.shape[1]
-    N = np.int32(links.shape[0] ** (1 / d))
+def gram_schmidt_unitary_projection(U):
+    # Orthogonalize the first and second row using Gram-Schmidt
+    U[0] = U[0] / np.sqrt(np.sum(np.abs(U[0]) ** 2))
+    U[1] = U[1] - np.dot(U[0].conj(), U[1]) * U[0]
+    U[1] = U[1] / np.sqrt(np.sum(np.abs(U[1]) ** 2))
+
+    # The third row is determined by unitarity, it must be orthogonal to the first two rows
+    U[2] = np.cross(U[0].conj(), U[1].conj()).conj()
+    return U
+
+
+@njit
+def project_to_SU3(U):
+    # Make U unitary using Gram-Schmidt
+    U = gram_schmidt_unitary_projection(U)
+
+    # Ensure determinant is 1 (SU(3))
+    det_U = np.linalg.det(U)
+    U = U / (det_U ** (1 / 3))
+
+    return U
+
+
+@njit
+def smear_matrix(old_links, new_links, x, mu, u0, eps):
+    d = old_links.shape[1]
+    N = np.int32(old_links.shape[0] ** (1 / d))
     i = encode_index(x, N, d)
-    links[i][mu] = np.identity(3) + eps * compute_gauge_covariant_derivative(links, x, mu, u0)
-    if n > 1:
-        smear_matrix(links, x, mu, u0, eps, n - 1)
+
+    # Get the original link from the old links (not yet smeared)
+    original_link = get_link(old_links, x, mu + 1)
+
+    # Compute the gauge covariant derivative based on old links
+    D = compute_gauge_covariant_derivative(old_links, x, mu, u0)
+
+    # Apply the smearing update: Add the contribution to the link
+    new_link = original_link + eps * D
+
+    # Project the matrix back to SU(3) to ensure unitarity
+    new_link = project_to_SU3(new_link)
+
+    # Update the new links array
+    new_links[i][mu] = new_link
 
 
 @njit
 def smear_links(links, mu, u0, eps, n):
     d = links.shape[1]
     N = np.int32(links.shape[0] ** (1 / d))
+
     old_links = np.copy(links)
-    new_links = np.zeros_like(links)
-    for i in range(links.shape[0]):
-        x = decode_index(i, N, d)
-        links = np.copy(old_links)
-        smear_matrix(links, x, mu, u0, eps, n)
-        new_links[i, mu] = np.copy(links[i, mu])
+    new_links = np.copy(links)
+
+    for _ in range(n):
+        for i in range(links.shape[0]):
+            x = decode_index(i, N, d)
+            smear_matrix(old_links, new_links, x, mu, u0, eps)
+        old_links = np.copy(new_links)
+    return new_links
 
 
-@njit(parallel=True)
 def compute_static_quark_potential(
-    N, d, N_cf, N_cor, hits, thermalization_its, N_copies, bin_size, beta, random_matrices, u0, improved, eps_smearing=0.0, n_smearing=0
+    N,
+    d,
+    N_cf,
+    N_cor,
+    hits,
+    thermalization_its,
+    N_copies,
+    bin_size,
+    beta,
+    random_matrices,
+    u0,
+    improved,
+    width_t,
+    max_r,
+    eps_smearing=0.0,
+    n_smearing=0,
 ):
     links = create_lattice_links(N, d)
+
+    # Smearing
     if eps_smearing != 0.0 and n_smearing != 0:
         # Smear all spatial directions
         for mu in range(1, d):
             smear_links(links, mu, u0, eps_smearing, n_smearing)
-    rs = np.arange(1, N)
-    results = np.zeros((N - 1, N_copies, 2), dtype=np.float64)
 
-    def compute_single_value(i):
-        r = rs[i]
-        l = np.copy(links)
-        loops = np.zeros((2, 2 * (N - 1 + r)), dtype=np.int32)
-        # t loop
-        steps_t = get_steps_for_rectangle(N - 2, r, 0, 1)
-        for j in prange(steps_t.shape[0]):
-            loops[0, j] = steps_t[j]
-        # t+a loop
-        loops[1] = get_steps_for_rectangle(N - 1, r, 0, 1)
-        print(loops)
-        result = compute_path_integral_average(
-            l, loops, N_cf, N_cor, hits, thermalization_its, N_copies, bin_size, beta, random_matrices, u0, improved
-        )
-        return result
+    # for each spatial separation we need two loops with t and t+a temporal separation
+    width_t_a = width_t + 1
 
-    for i in range(N - 1):
-        results[i] = compute_single_value(i)
+    # compute the length for the most lengthy loop
+    max_length_loop = (N - 1) * d * 2
 
-    V_bootstrap = np.zeros((N_copies, N - 1), dtype=np.float64)
+    # Prepare loops for all spatial separations of the two quarks
+    x_t = np.zeros(d, dtype=np.int32)
+    x_t_a = np.zeros(d, dtype=np.int32)
+    x_t[0] = width_t
+    x_t_a[0] = width_t_a
+
+    possible_steps = get_non_decreasing_sequences(d - 1, N - 1)
+    accepted_steps = np.zeros_like(possible_steps)
+    num_loops = 0
+    for i in range(possible_steps.shape[0]):
+        if 0 < np.sum(possible_steps[i] ** 2) < max_r**2:
+            accepted_steps[num_loops] = possible_steps[i]
+            num_loops += 1
+
+    loops = np.zeros((num_loops * 2, max_length_loop), dtype=np.int32)
+
+    for i in range(num_loops):
+        x = accepted_steps[i]
+        for j in range(d - 1):
+            x_t[j + 1] = x[j]
+            x_t_a[j + 1] = x[j]
+        steps_t = get_nonplanar_steps(x_t)
+        steps_t_a = get_nonplanar_steps(x_t_a)
+
+        for j in range(steps_t.shape[0]):
+            loops[i, j] = steps_t[j]
+        for j in range(steps_t_a.shape[0]):
+            loops[i + num_loops, j] = steps_t_a[j]
+        print(loops[i])
+        print(loops[i + num_loops])
+
+    # compute path integral averages for all loops
+    results = compute_path_integral_average(
+        links, loops, N_cf, N_cor, hits, thermalization_its, N_copies, bin_size, beta, random_matrices, u0, improved, rotate_time=False
+    )
+
+    # Bootstrap
+    V_bootstrap = np.zeros((N_copies, num_loops), dtype=np.float64)
     for i in range(N_copies):
-        for j in range(N - 1):
-            V_bootstrap[i, j] = np.log(np.abs(results[j, i, 0] / results[j, i, 1]))
-    return V_bootstrap
+        for j in range(num_loops):
+            V_bootstrap[i, j] = np.log(np.abs(results[i, j] / results[i, j + num_loops]))
+
+    # [0]: r2, [1]: V, [2]: err
+    return_data = np.zeros((3, num_loops), dtype=np.float64)
+    for i in range(num_loops):
+        x = accepted_steps[i]
+        r = np.sqrt(np.sum(x**2))
+        V = np.sum(V_bootstrap[:, i]) / N_copies
+        err = np.sqrt(np.sum((V_bootstrap[:, i] - V) ** 2) / N_copies)
+        return_data[0, i] = r
+        return_data[1, i] = V
+        return_data[2, i] = err
+
+    return return_data
