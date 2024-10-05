@@ -130,7 +130,7 @@ def compute_path_integral_average(
     N_bins = int(np.ceil(N_cf / bin_size))  # if bin_size == 1, then N_bins == N_cf
     avgs = np.zeros((N_copies, N_points), dtype=np.float64)
     stds = np.zeros((N_copies, N_points), dtype=np.float64)
-    if N_copies > 1:  # bootstrap procedure
+    if N_copies > 1:  # bootstrap procedure, see paper
         for i in range(N_copies):
             matrix_of_functionals_bootstrap = np.zeros((N_bins, N_points), dtype=np.float64)
             for rows in range(N_bins):

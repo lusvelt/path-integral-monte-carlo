@@ -37,6 +37,19 @@ class Plot:
         """
         self.ax.plot(np.array([a, b]), value * np.ones(2), color=color, label=label)
 
+    def add_plot(self, a, b, f, color, label, n_points=50):
+        """
+        Adds a plot of a constant value (horizontal line) to the plot.
+
+        Args:
+            a (float): The left bound of the plot.
+            b (float): The right bound of the plot.
+            value (float): The value of the constant.
+            color (string): The color of the plot.
+        """
+        x = np.linspace(a, b, n_points)
+        self.ax.plot(x, f(x), color=color, label=label)
+
     def add_errorbar_points(self, x, y, yerr, color, label):
         """
         Adds points with error bars to the plot.

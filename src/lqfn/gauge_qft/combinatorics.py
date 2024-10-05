@@ -41,16 +41,21 @@ def generate_permutations(arr, start, end, result, idx):
         idx[0] += 1
     else:
         for i in range(start, end):
-            arr[start], arr[i] = arr[i], arr[start]  # Swap
-            generate_permutations(arr, start + 1, end, result, idx)
-            arr[start], arr[i] = arr[i], arr[start]  # Backtrack
+            if arr[start] != arr[i]:
+                arr[start], arr[i] = arr[i], arr[start]  # Swap
+                generate_permutations(arr, start + 1, end, result, idx)
+                arr[start], arr[i] = arr[i], arr[start]  # Backtrack
 
 
 @njit
 def permute(arr):
     N = arr.shape[0]
-    num_permutations = factorial(N)  # Total number of permutations
-    result = np.zeros((num_permutations, N), dtype=np.int32)  # Store permutations
+    max_num_permutations = factorial(N)  # Total number of permutations
+    result = np.zeros((max_num_permutations, N), dtype=np.int32)  # Store permutations
     idx = np.array([0])  # Track the index in result
     generate_permutations(arr, 0, N, result, idx)
-    return result
+    # now idx[0] contains the number of generated permutations
+    actual_permutations = np.zeros((idx[0], N), dtype=np.int32)
+    for i in range(idx[0]):
+        actual_permutations[i] = result[i]
+    return actual_permutations
