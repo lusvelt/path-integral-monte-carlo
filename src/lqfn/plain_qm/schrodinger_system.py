@@ -61,8 +61,10 @@ class SchrodingerSystem:
             return S_per_timeslice(j, x, T / N)
 
         self.S_per_timeslice = S
-        self._eigenstates = None  # This attribute will eventually be filled when Schrodinger equation will be solved
-        self._eigenstates_N = None  # This saves the precision by which the Schrodinger equation results have been stored
+        # This attribute will eventually be filled when Schrodinger equation will be solved
+        self._eigenstates = None
+        # This saves the precision by which the Schrodinger equation results have been stored
+        self._eigenstates_N = None
 
     @property
     def a(self) -> float:

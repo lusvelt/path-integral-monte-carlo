@@ -18,12 +18,16 @@ def update_path(path, S_per_timeslice, eps: np.float64):
     """
     N = path.shape[0]
     for j in range(N):
-        old_x = path[j]  # save original value
+        # save original value
+        old_x = path[j]
         old_Sj = S_per_timeslice(j, path)
-        path[j] += np.random.uniform(-eps, eps)  # update path[j]
-        dS = S_per_timeslice(j, path) - old_Sj  # change in action
+        # update path[j]
+        path[j] += np.random.uniform(-eps, eps)
+        # change in action
+        dS = S_per_timeslice(j, path) - old_Sj
         if dS > 0 and np.exp(-dS) < np.random.uniform(0, 1):
-            path[j] = old_x  # restore old value
+            # restore old value
+            path[j] = old_x
 
 
 @njit
@@ -59,12 +63,15 @@ def generate_functional_samples(
     functional_samples = np.zeros((N_bins, N_points), dtype=np.float64)
     bin_samples = np.zeros((bin_size, N_points), dtype=np.float64)
     path = np.zeros(N, np.float64)
-    for _ in range(thermalization_its * N_cor):  # thermalization
+    # thermalization
+    for _ in range(thermalization_its * N_cor):
         update_path(path, S_per_timeslice, eps)
     for i in range(N_cf):
-        for _ in range(N_cor):  # discard N_cor values
+        # discard N_cor values of G
+        for _ in range(N_cor):
             update_path(path, S_per_timeslice, eps)
-        for n in range(N_points):  # for every time instant we have N_cf values of G
+        # for every time instant we have N_cf values of G
+        for n in range(N_points):
             bin_samples[i % bin_size][n] = functional(path, n)
         if (i + 1) % bin_size == 0 or i == N_cf - 1:
             for n in range(N_points):
@@ -127,11 +134,14 @@ def compute_path_integral_average(
         bin_size,
         N_points,
     )
-    N_bins = int(np.ceil(N_cf / bin_size))  # if bin_size == 1, then N_bins == N_cf
+    # if bin_size == 1, then N_bins == N_cf
+    N_bins = int(np.ceil(N_cf / bin_size))
     avgs = np.zeros((N_copies, N_points), dtype=np.float64)
     stds = np.zeros((N_copies, N_points), dtype=np.float64)
-    if N_copies > 1:  # bootstrap procedure
+    # bootstrap procedure
+    if N_copies > 1:
         for i in range(N_copies):
+            # create a matrix of functional samples by picking randomnly N_bins samples the functional_samples matrix
             matrix_of_functionals_bootstrap = np.zeros((N_bins, N_points), dtype=np.float64)
             for rows in range(N_bins):
                 index_of_copied_path = np.int32(np.random.uniform(0, N_bins))

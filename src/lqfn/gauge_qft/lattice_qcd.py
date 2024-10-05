@@ -706,7 +706,6 @@ def smear_links(links, mu, u0, eps, n):
     return new_links
 
 
-# perchè c'è una funzione dentro una funzione??(i punti interrogativi me li ha suggeriti copilot)
 @njit(parallel=True)
 def compute_static_quark_potential(
     N,
