@@ -234,7 +234,7 @@ class SchrodingerSystem:
         - If 1 < N_copies <= N_cf: bootstrap procedure is used both for computing $\\Delta E$ and for the error calculation. See Lepage's paper for more info.
 
         Args:
-            functional (Callable[np.ndarray, int] -> float): Discretized correlation functional that takes a path and a time index and returns the value of the correlator.
+            functional (Callable[np.ndarray, int] -> float): Discretized correlation functional that takes a path and a time index and returns the value of the correlator. Must be marked with numba's @njit.
             N_cf (int): Total number of samples contributing to be saved during the process for computing the path integral average.
             N_cor (int): Number of path updates before picking each sample.
             eps (float): $\\epsilon$ parameter for the update of the path.

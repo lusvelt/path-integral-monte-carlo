@@ -30,7 +30,6 @@ def select_root_subinterval(f: Callable, a: float, b: float, num_subintervals: i
     with concurrent.futures.ThreadPoolExecutor(max_workers=num_extremes) as executor:
         futures = [executor.submit(f, z) for z in extremes]
         results = [job.result() for job in futures]
-    print(results)
     i_first = 0
     i_last = num_subintervals - 1
     if results[0] * results[-1] < 0:
