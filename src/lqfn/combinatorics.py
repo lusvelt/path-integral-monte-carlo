@@ -6,14 +6,24 @@ import numpy as np
 from numba import njit
 
 
+# we need to define the factorial function, because the already existing ones are not supported in numba
 @njit
 def factorial(n):
+    """
+    Numba-compatible factorial function.
+    """
     f = 1
     for i in range(1, n + 1):
         f *= i
     return f
 
 
+# this is a recursive function that computes non-decreasing sequences
+# result: stores the generated sequences
+# current_sequence: it is needed to generate the next sequence
+# pos: a pointer to the element of the sequence that is currently being updated
+# max_digit: the maximum digit appearing in the sequences
+# idx: a one-element array, storing a global counter for the generated sequences
 @njit
 def _generate_sequences(result, current_sequence, pos, max_digit, idx):
     if pos == len(current_sequence):
@@ -29,6 +39,16 @@ def _generate_sequences(result, current_sequence, pos, max_digit, idx):
 
 @njit
 def get_non_decreasing_sequences(length, max_digit):
+    """
+    Generates a list of non-decreasing sequences of a specific length, starting from `[0,0,...,0]` to `[M,M,...,M]`, where `M=max_digit`
+
+    Args:
+        length (int): the desired length for the generated sequences
+        max_digit (int): the maximum digit appearing in the sequences
+
+    Returns:
+        np.ndarray[int, num_sequences, length]: the list of generated sequences
+    """
     num_sequences = factorial(max_digit + length) // (factorial(length) * factorial(max_digit))  # Calculate number of sequences
     result = np.zeros((num_sequences, length), dtype=np.int32)  # Store the sequences
     current_sequence = np.zeros(length, dtype=np.int32)
@@ -38,6 +58,11 @@ def get_non_decreasing_sequences(length, max_digit):
     return result
 
 
+# this is a recursive function used to generate the permutations of a given array
+# start: the pointer to the element that is being swapped with the others
+# end: the length of the array
+# result: an array that will contain the list of all permutations
+# idx: a one-element array, storing a global counter for the generated sequences
 @njit
 def _generate_permutations(arr, start, end, result, idx):
     if start == end:
@@ -53,6 +78,15 @@ def _generate_permutations(arr, start, end, result, idx):
 
 @njit
 def permute(arr):
+    """
+    Generates all the permutations of a given array, also accounting for repetitions.
+
+    Args:
+        arr (np.ndarray[int]): the array to be permuted
+
+    Returns:
+        np.ndarray[int, num_permutations, arr.shape[0]]: the list of permutations
+    """
     N = arr.shape[0]
     max_num_permutations = factorial(N)  # Total number of permutations
     result = np.zeros((max_num_permutations, N), dtype=np.int32)  # Store permutations
