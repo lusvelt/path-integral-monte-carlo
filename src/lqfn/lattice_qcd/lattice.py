@@ -3,12 +3,12 @@ This module contains utilities for manipulating a QCD lattice.
 All the functions are written with numba, since these utilities will be called by functions which implement computationally intense procedures.
 The main data structure that is carried around the various functions is called `links`, which contains the field configuration in terms of links connecting adjacent lattice points.
 The shape of the links array is $(N^d, d, 3, 3)$:
-    - The first index is for the spacetime point $x$, encoded in a decimal integer
-    - The second index is for the spacetime direction
-    - The other two indices are for the SU(3) matrix
+- The first index is for the spacetime point $x$, encoded in a decimal integer
+- The second index is for the spacetime direction
+- The other two indices are for the SU(3) matrix
 This data structure encodes all information about the lattice, in particular:
-    - `N`: the number of lattice points in each direction
-    - `d`: the spacetime dimensions
+- `N`: the number of lattice points in each direction
+- `d`: the spacetime dimensions
 To avoid passing around `N` and `d` alongside `links` in each function, at the beginning of most functions we invoke the `get_d_N(links)` function to get this info.
 """
 

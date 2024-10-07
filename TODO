@@ -1,11 +1,4 @@
-IMPORTANT:
-- Document that functionals should be decorated with @njit
-- Document also private methods, at least comment them
-- Explain better what we are doing (in all jupyter notebooks)
-- Comment all the code, use Copilot for help
-- Refactor static-quark-potential.ipynb (e.g. periodic boundary conditions)
-
-
 IMPROVEMENTS:
 - Refactor compute_G and plot()
 - Compute metropolis average acceptance rate to get eps parameter (optimal at 50% acceptance rate)
+- See if more loops have to be include in get_nonplanar_steps
