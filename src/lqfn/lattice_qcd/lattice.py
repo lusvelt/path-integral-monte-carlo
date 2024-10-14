@@ -337,10 +337,10 @@ def get_nonplanar_steps(widths):
         widths (int): the sides of the spacial parallelepiped that separates the two quarks
 
     Returns:
-        numpy.ndarray[int]: a list of loops that goes from
+        numpy.ndarray[int]: a list of loops that goes from the origin to the spacetime point given by `widths`
     """
-    # TODO: maybe there are more paths
     # e.g. if widths == [2,3,3] then we need [+1,+1,+2,+2,+2,+3,+3,+3,-1,-1,-2,-2,-2,-3,-3,-3]
+    # maybe there are more paths... for the same loop
     tot_steps = np.sum(widths) * 2
     steps = np.zeros(tot_steps, dtype=np.int32)
     j = 0

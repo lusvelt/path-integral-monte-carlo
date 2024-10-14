@@ -1,4 +1,0 @@
-IMPROVEMENTS:
-- Refactor compute_G and plot()
-- Compute metropolis average acceptance rate to get eps parameter (optimal at 50% acceptance rate)
-- See if more loops have to be include in get_nonplanar_steps
