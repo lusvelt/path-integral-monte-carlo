@@ -1,0 +1,16 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{k}{def} \PYG{n+nf}{update\PYGZus{}path}\PYG{p}{(}\PYG{n}{path}\PYG{p}{,} \PYG{n}{S\PYGZus{}per\PYGZus{}timeslice}\PYG{p}{,} \PYG{n}{eps}\PYG{p}{:} \PYG{n}{np}\PYG{o}{.}\PYG{n}{float64}\PYG{p}{):}
+    \PYG{n}{N} \PYG{o}{=} \PYG{n}{path}\PYG{o}{.}\PYG{n}{shape}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}
+    \PYG{k}{for} \PYG{n}{j} \PYG{o+ow}{in} \PYG{n+nb}{range}\PYG{p}{(}\PYG{n}{N}\PYG{p}{):}
+        \PYG{c+c1}{\PYGZsh{} Save the original value}
+        \PYG{n}{old\PYGZus{}x} \PYG{o}{=} \PYG{n}{path}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}
+        \PYG{n}{old\PYGZus{}Sj} \PYG{o}{=} \PYG{n}{S\PYGZus{}per\PYGZus{}timeslice}\PYG{p}{(}\PYG{n}{j}\PYG{p}{,} \PYG{n}{path}\PYG{p}{)}
+        \PYG{c+c1}{\PYGZsh{} Propose a new value for path[j]}
+        \PYG{n}{path}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]} \PYG{o}{+=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{random}\PYG{o}{.}\PYG{n}{uniform}\PYG{p}{(}\PYG{o}{\PYGZhy{}}\PYG{n}{eps}\PYG{p}{,} \PYG{n}{eps}\PYG{p}{)}
+        \PYG{c+c1}{\PYGZsh{} Calculate the change in action}
+        \PYG{n}{dS} \PYG{o}{=} \PYG{n}{S\PYGZus{}per\PYGZus{}timeslice}\PYG{p}{(}\PYG{n}{j}\PYG{p}{,} \PYG{n}{path}\PYG{p}{)} \PYG{o}{\PYGZhy{}} \PYG{n}{old\PYGZus{}Sj}
+        \PYG{c+c1}{\PYGZsh{} Accept or reject the new value based on Metropolis criterion}
+        \PYG{k}{if} \PYG{n}{dS} \PYG{o}{\PYGZgt{}} \PYG{l+m+mi}{0} \PYG{o+ow}{and} \PYG{n}{np}\PYG{o}{.}\PYG{n}{exp}\PYG{p}{(}\PYG{o}{\PYGZhy{}}\PYG{n}{dS}\PYG{p}{)} \PYG{o}{\PYGZlt{}} \PYG{n}{np}\PYG{o}{.}\PYG{n}{random}\PYG{o}{.}\PYG{n}{uniform}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{):}
+            \PYG{c+c1}{\PYGZsh{} Restore old value if not accepted}
+            \PYG{n}{path}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]} \PYG{o}{=} \PYG{n}{old\PYGZus{}x}
+\end{Verbatim}

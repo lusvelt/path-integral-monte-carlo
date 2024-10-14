@@ -1,0 +1,77 @@
+\documentclass{beamer}
+
+\usepackage{mathtools}
+\usetheme{Boadilla}
+\usepackage{minted}
+\usepackage{tikz}
+\usepackage{amsmath}
+\usetikzlibrary{decorations.markings}
+
+
+
+%Information to be included in the title page:
+\title{Path integral Monte Carlo: Lattice QCD}
+\author{Damiano Scevola, Federico Tonetto}
+\institute{University of Bologna}
+\date{October 2024}
+
+\begin{document}
+
+\frame{\titlepage}
+\begin{frame}{Lattice QCD computational cost}
+    The cost of a lattice QCD computation is given by:
+    \begin{equation*}
+        C \simeq \left(\frac{L}{a}\right)^4 \frac{1}{a}\frac{1}{m_{\pi}^2 a}
+    \end{equation*}
+    The tradeoff is between:
+    \begin{itemize}
+        \item Making $a$ as low as possible to approach the continuous limit $a \rightarrow 0$ and increase accuracy (due to derivatives and high energy effects)
+        \item Making $a$ as large as possible to decrease the cost of the calculation, since it goes as $a^{-6}$
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Ultraviolet cutoff and renormalization}
+    By discretizing spacetime, the maximum momentum we can have is given by the minimum oscillation wavelength, which is $\lambda_{min}=2a$:
+    \begin{equation*}
+        p_{max} = \frac{2\pi}{\lambda_{min}} = \frac{\pi}{a}
+    \end{equation*}
+    In an interacting (non-linear) QFT, high energy particles do not decouple from low-energy phenomena, and therefore have to be mimicked by renormalization.
+
+    The renormalization is computed via perturbative QFT calculations, so the lattice should be fine enough for QCD to be perturbative at the highest energy.
+
+    Calculations in continuum QFT suggest that $a\simeq 0.5\ fm$ is enough, but naive lattice calculations do not work unless $a \lesssim 0.05-0.1\ fm$.
+
+    Tadpole improvement solves this issue.
+\end{frame}
+
+\begin{frame}{Tadpole improvement}
+    In the naive approach to lattice calculations, one assumes that the coupling is the bare one, which is approximately equal to the running coupling computed at the cutoff value $g_s(p_{max})$ for the smallest lattice spacing.
+
+    However, this coupling turns out to be much smaller than the effective coupling at larger lattice spacings, and this leads to poor convergence.
+
+    Since we encode the field configuration using link variables
+    \begin{equation*}
+        U_{\mu} (x) = \mathcal{P} e^{-i\int_x^{x+a\hat{\mu}} g A \cdot dx} \approx e^{-iagA_{\mu}}
+    \end{equation*}
+    and in the lagrangian we have a leading term like $\frac{1}{a}\bar{\psi}U_{\mu}\gamma^{\mu}\psi$, then we have terms with higher power in $agA_{\mu}$, which become uncomfortably large in the quantum theory. These are the tadpole contributions.
+
+    To cancel them, it is sufficient to renormalize the links by dividing by a renormalization constant $u_0$:
+    \begin{equation*}
+        U_{\mu}(x) \rightarrow \frac{U_{\mu}(x)}{u_0}
+    \end{equation*}
+
+    Since the tadpole is process independent, one can compute $u_0$ once for a specific known process, and then use it in other computations.
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Field configuration encoding}
+In lattice simulations, we want to preserve gauge invariance, and the simplest way to encode the field configuration in this case is by storing the values of the links connecting adjacent spacetime points:
+\begin{equation*}
+    U_{\mu}(x) = \mathcal{P}e^{-i\int_x^{x+a\hat{\mu}} g A \cdot dx}
+\end{equation*}
+This is the path ordered exponential of the integral of $gA_{\mu}$ from the starting node $x$ towards the spacetime direction $\hat{\mu}$ with length $a$, where $A_{\mu}(x)$ is the gluon field.
+
+This turns out to be an $SU(3)$ element, which is gauge covariant.
+\end{frame}
+
+\end{document}

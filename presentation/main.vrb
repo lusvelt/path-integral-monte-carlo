@@ -1,0 +1,18 @@
+\frametitle{Paths and loops}
+    Wilson loops:
+    \begin{equation*}
+        W(\mathcal{C}) = \frac{1}{3} Re\ tr (\mathcal{C})
+    \end{equation*}
+    $\mathcal{C}$: product of links
+
+
+    \begin{minted}{python}
+    compute_path(links, [1,0], [+1,+2,+1,+2,-1,-1,-2,-2])
+    \end{minted}
+
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.3\linewidth]{wilsonloop.png}
+        \caption{Example of a Wilson loop in a 4 x 4 2d lattice. $\mu \leftrightarrow 1$, $\nu \leftrightarrow 2$ }
+        \label{fig:wilson-loop}
+    \end{figure}
