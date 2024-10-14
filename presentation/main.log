@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) (preloaded format=pdflatex 2023.11.15)  14 OCT 2024 13:15
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) (preloaded format=pdflatex 2023.11.15)  14 OCT 2024 13:22
 entering extended mode
  \write18 enabled.
  file:line:error style messages enabled.
@@ -900,30 +900,11 @@ Dictionary: translator-months-dictionary, Language: English
 Dictionary: translator-numbers-dictionary, Language: English
 ) (c:/texlive/2023/texmf-dist/tex/latex/translator/translator-theorem-dictionary-English.dict
 Dictionary: translator-theorem-dictionary, Language: English
-) (./main.nav)
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 19--19
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 21--21
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-
-Overfull \hbox (38.55957pt too wide) has occurred while \output is active
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-[1
+) (./main.nav) [1
 
 {c:/texlive/2023/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 30--30
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
 LaTeX Font Info:    Trying to load font information for U+msa on input line 30.
-(c:/texlive/2023/texmf-dist/tex/latex/amsfonts/umsa.fd
+ (c:/texlive/2023/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
 LaTeX Font Info:    Trying to load font information for U+msb on input line 30.
@@ -933,210 +914,78 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 LaTeX Font Info:    Trying to load font information for OT1+mathkerncmss on input line 30.
  (c:/texlive/2023/texmf-dist/tex/latex/sansmathaccent/ot1mathkerncmss.fd
 File: ot1mathkerncmss.fd 2020/01/31 Fontinst v1.933 font definitions for OT1/mathkerncmss.
-)
-Overfull \hbox (38.55957pt too wide) has occurred while \output is active
- [][]  \OT1/cmss/m/n/6 ([])
- []
+) [2
 
-[2
+] [3
 
 ]
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 39--39
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-
-Overfull \hbox (38.55957pt too wide) has occurred while \output is active
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-[3
-
-]
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 49--49
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
 <harmonic_oscillator_numerical_propagator.png, id=108, 558.085pt x 417.56pt>
 File: harmonic_oscillator_numerical_propagator.png Graphic file (type png)
 <use harmonic_oscillator_numerical_propagator.png>
 Package pdftex.def Info: harmonic_oscillator_numerical_propagator.png  used on input line 49.
 (pdftex.def)             Requested size: 171.14764pt x 128.05327pt.
-
-Overfull \hbox (38.55957pt too wide) has occurred while \output is active
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-[4
+ [4
 
  <./harmonic_oscillator_numerical_propagator.png>]
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 59--59
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
 <anharmonic_oscillator_numerical.png, id=138, 578.16pt x 433.62pt>
 File: anharmonic_oscillator_numerical.png Graphic file (type png)
 <use anharmonic_oscillator_numerical.png>
 Package pdftex.def Info: anharmonic_oscillator_numerical.png  used on input line 59.
 (pdftex.def)             Requested size: 171.14764pt x 128.36009pt.
+ [5
 
-Overfull \hbox (38.55957pt too wide) has occurred while \output is active
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-[5
-
- <./anharmonic_oscillator_numerical.png>]
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 67--67
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-
-Overfull \hbox (38.55957pt too wide) has occurred while \output is active
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-[6
+ <./anharmonic_oscillator_numerical.png>] [6
 
 ]
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 70--70
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
 \openout4 = `main.vrb'.
 
-
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 88--88
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-(./main.vrb
+ (./main.vrb
 \openout5 = `main.pyg'.
 
  (./_minted-main/default.pygstyle) (./_minted-main/2560F9F56149A2F87E7C683228D23D19CF33289265490CC72470AF6FAFE9A294.pygtex
 LaTeX Font Info:    Font shape `OT1/cmtt/bx/n' in size <10.95> not available
 (Font)              Font shape `OT1/cmtt/m/n' tried instead on input line 2.
-))
-Overfull \hbox (38.55957pt too wide) has occurred while \output is active
- [][]  \OT1/cmss/m/n/6 ([])
- []
+)) [7
 
-[7
+] [8
 
 ]
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 99--99
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-
-Overfull \hbox (38.55957pt too wide) has occurred while \output is active
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-[8
-
-]
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 103--103
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
 \openout4 = `main.vrb'.
 
-
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 117--117
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-(./main.vrb
+ (./main.vrb
 \openout5 = `main.pyg'.
 
- (./_minted-main/87FBF583FE7869BE59CDE736E1619DF5CF33289265490CC72470AF6FAFE9A294.pygtex))
-Overfull \hbox (38.55957pt too wide) has occurred while \output is active
- [][]  \OT1/cmss/m/n/6 ([])
- []
+ (./_minted-main/87FBF583FE7869BE59CDE736E1619DF5CF33289265490CC72470AF6FAFE9A294.pygtex)) [9
 
-[9
+] [10
 
-]
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 122--122
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-
-Overfull \hbox (38.55957pt too wide) has occurred while \output is active
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-[10
+] [11
 
 ]
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 135--135
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-
-Overfull \hbox (38.55957pt too wide) has occurred while \output is active
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-[11
-
-]
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 145--145
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
 <harmonic_oscillator.png, id=337, 416.2752pt x 327.3831pt>
 File: harmonic_oscillator.png Graphic file (type png)
 <use harmonic_oscillator.png>
 Package pdftex.def Info: harmonic_oscillator.png  used on input line 145.
 (pdftex.def)             Requested size: 171.14764pt x 134.60258pt.
-
-Overfull \hbox (38.55957pt too wide) has occurred while \output is active
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-[12
+ [12
 
  <./harmonic_oscillator.png>]
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 155--155
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
 <anharmonic_oscillator_basic.png, id=369, 578.16pt x 454.69875pt>
 File: anharmonic_oscillator_basic.png Graphic file (type png)
 <use anharmonic_oscillator_basic.png>
 Package pdftex.def Info: anharmonic_oscillator_basic.png  used on input line 155.
 (pdftex.def)             Requested size: 171.14764pt x 134.59982pt.
-
-Overfull \hbox (38.55957pt too wide) has occurred while \output is active
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-[13
+ [13
 
  <./anharmonic_oscillator_basic.png>]
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 165--165
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
 <cubic_propagator.png, id=399, 416.2752pt x 328.8285pt>
 File: cubic_propagator.png Graphic file (type png)
 <use cubic_propagator.png>
 Package pdftex.def Info: cubic_propagator.png  used on input line 165.
 (pdftex.def)             Requested size: 171.14764pt x 135.19687pt.
-
-Overfull \hbox (38.55957pt too wide) has occurred while \output is active
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-[14
+ [14
 
  <./cubic_propagator.png>]
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 186--186
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
 <harmonic_oscillator_with_low_thermalization.png, id=429, 569.12625pt x 456.70625pt>
 File: harmonic_oscillator_with_low_thermalization.png Graphic file (type png)
 <use harmonic_oscillator_with_low_thermalization.png>
@@ -1147,66 +996,17 @@ File: harmonic_oscillator_with_low_thermalization_and_binning.png Graphic file (
 <use harmonic_oscillator_with_low_thermalization_and_binning.png>
 Package pdftex.def Info: harmonic_oscillator_with_low_thermalization_and_binning.png  used on input line 186.
 (pdftex.def)             Requested size: 136.91603pt x 109.86847pt.
+ [15
 
-Overfull \hbox (38.55957pt too wide) has occurred while \output is active
- [][]  \OT1/cmss/m/n/6 ([])
- []
+ <./harmonic_oscillator_with_low_thermalization.png> <./harmonic_oscillator_with_low_thermalization_and_binning.png>] [16
 
-[15
+] [17
 
- <./harmonic_oscillator_with_low_thermalization.png> <./harmonic_oscillator_with_low_thermalization_and_binning.png>]
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 198--198
- [][]  \OT1/cmss/m/n/6 ([])
- []
+] [18
 
-
-Overfull \hbox (38.55957pt too wide) has occurred while \output is active
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-[16
+] [19
 
 ]
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 207--207
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-
-Overfull \hbox (38.55957pt too wide) has occurred while \output is active
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-[17
-
-]
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 213--213
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-
-Overfull \hbox (38.55957pt too wide) has occurred while \output is active
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-[18
-
-]
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 225--225
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-
-Overfull \hbox (38.55957pt too wide) has occurred while \output is active
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-[19
-
-]
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 244--244
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
 <Harmonic_oscillator_with_improved_action.png, id=571, 578.16pt x 454.69875pt>
 File: Harmonic_oscillator_with_improved_action.png Graphic file (type png)
 <use Harmonic_oscillator_with_improved_action.png>
@@ -1217,30 +1017,11 @@ File: harmonic_oscillator_with_no_ghosts.png Graphic file (type png)
 <use harmonic_oscillator_with_no_ghosts.png>
 Package pdftex.def Info: harmonic_oscillator_with_no_ghosts.png  used on input line 244.
 (pdftex.def)             Requested size: 136.91603pt x 107.67291pt.
+ [20
 
-Overfull \hbox (38.55957pt too wide) has occurred while \output is active
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-[20
-
- <./Harmonic_oscillator_with_improved_action.png> <./harmonic_oscillator_with_no_ghosts.png>]
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 256--256
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-
-Overfull \hbox (38.55957pt too wide) has occurred while \output is active
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-[21
+ <./Harmonic_oscillator_with_improved_action.png> <./harmonic_oscillator_with_no_ghosts.png>] [21
 
 ]
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 275--275
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
 <anharmonic_oscillator_with_improved_action.png, id=630, 578.16pt x 454.69875pt>
 File: anharmonic_oscillator_with_improved_action.png Graphic file (type png)
 <use anharmonic_oscillator_with_improved_action.png>
@@ -1251,127 +1032,41 @@ File: anharmonic_oscillator_with_no_ghosts.png Graphic file (type png)
 <use anharmonic_oscillator_with_no_ghosts.png>
 Package pdftex.def Info: anharmonic_oscillator_with_no_ghosts.png  used on input line 275.
 (pdftex.def)             Requested size: 136.91603pt x 109.38663pt.
+ [22
 
-Overfull \hbox (38.55957pt too wide) has occurred while \output is active
- [][]  \OT1/cmss/m/n/6 ([])
- []
+ <./anharmonic_oscillator_with_improved_action.png> <./anharmonic_oscillator_with_no_ghosts.png>] [23
 
-[22
+] [24
 
- <./anharmonic_oscillator_with_improved_action.png> <./anharmonic_oscillator_with_no_ghosts.png>]
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 280--280
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-
-Overfull \hbox (38.55957pt too wide) has occurred while \output is active
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-[23
+] [25
 
 ]
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 289--289
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-
-Overfull \hbox (38.55957pt too wide) has occurred while \output is active
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-[24
-
-]
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 295--295
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-
-Overfull \hbox (38.55957pt too wide) has occurred while \output is active
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-[25
-
-]
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 309--309
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
 <anharmonic_oscillator_with_correct_z.png, id=744, 587.19376pt x 454.69875pt>
 File: anharmonic_oscillator_with_correct_z.png Graphic file (type png)
 <use anharmonic_oscillator_with_correct_z.png>
 Package pdftex.def Info: anharmonic_oscillator_with_correct_z.png  used on input line 309.
 (pdftex.def)             Requested size: 171.14764pt x 132.52531pt.
+ [26
 
-Overfull \hbox (38.55957pt too wide) has occurred while \output is active
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-[26
-
- <./anharmonic_oscillator_with_correct_z.png>]
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 319--319
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-
-Overfull \hbox (38.55957pt too wide) has occurred while \output is active
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-[27
+ <./anharmonic_oscillator_with_correct_z.png>] [27
 
 ]
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 331--331
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
 <lattice.png, id=800, 242.40562pt x 152.06813pt>
 File: lattice.png Graphic file (type png)
 <use lattice.png>
 Package pdftex.def Info: lattice.png  used on input line 331.
 (pdftex.def)             Requested size: 171.14764pt x 107.37045pt.
-
-Overfull \hbox (38.55957pt too wide) has occurred while \output is active
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-[28
+ [28
 
  <./lattice.png>]
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 335--335
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
 \openout4 = `main.vrb'.
 
-
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 349--349
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-(./main.vrb)
-Overfull \hbox (38.55957pt too wide) has occurred while \output is active
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-[29
+ (./main.vrb) [29
 
 ]
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 352--352
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
 \openout4 = `main.vrb'.
 
-
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 371--371
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-(./main.vrb
+ (./main.vrb
 \openout5 = `main.pyg'.
 
  (./_minted-main/8D48F968FFF3225377F962F82B5C285ACF33289265490CC72470AF6FAFE9A294.pygtex)
@@ -1380,139 +1075,50 @@ File: wilsonloop.png Graphic file (type png)
 <use wilsonloop.png>
 Package pdftex.def Info: wilsonloop.png  used on input line 15.
 (pdftex.def)             Requested size: 102.68962pt x 79.20828pt.
-)
-Overfull \hbox (38.55957pt too wide) has occurred while \output is active
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-[30
+) [30
 
  <./wilsonloop.png>]
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 426--426
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-
 pdfTeX warning (ext4): destination with the same identifier (name{fig:enter-label}) has been already used, duplicate ignored
 <to be read again>
                    \relax
 l.426 \end{frame}
-
-Overfull \hbox (38.55957pt too wide) has occurred while \output is active
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-[31
+                  [31
 
 ]
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 473--473
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-
 pdfTeX warning (ext4): destination with the same identifier (name{fig:enter-label}) has been already used, duplicate ignored
 <to be read again>
                    \relax
 l.473 \end{frame}
-
-Overfull \hbox (38.55957pt too wide) has occurred while \output is active
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-[32
+                  [32
 
 ]
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 522--522
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-
 pdfTeX warning (ext4): destination with the same identifier (name{fig:enter-label}) has been already used, duplicate ignored
 <to be read again>
                    \relax
 l.522 \end{frame}
-
-Overfull \hbox (38.55957pt too wide) has occurred while \output is active
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-[33
+                  [33
 
 ]
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 620--620
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-
 pdfTeX warning (ext4): destination with the same identifier (name{fig:enter-label}) has been already used, duplicate ignored
 <to be read again>
                    \relax
 l.620 \end{frame}
+                  [34
 
-Overfull \hbox (38.55957pt too wide) has occurred while \output is active
- [][]  \OT1/cmss/m/n/6 ([])
- []
+] [35
 
-[34
+] [36
 
-]
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 632--632
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-
-Overfull \hbox (38.55957pt too wide) has occurred while \output is active
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-[35
+] [37
 
 ]
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 641--641
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-
-Overfull \hbox (38.55957pt too wide) has occurred while \output is active
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-[36
-
-]
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 652--652
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-
-Overfull \hbox (38.55957pt too wide) has occurred while \output is active
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-[37
-
-]
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 712--712
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-
 pdfTeX warning (ext4): destination with the same identifier (name{fig:enter-label}) has been already used, duplicate ignored
 <to be read again>
                    \relax
 l.712 \end{frame}
-
-Overfull \hbox (38.55957pt too wide) has occurred while \output is active
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-[38
+                  [38
 
 ]
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 731--731
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
 <quark.png, id=1114, 161.10187pt x 103.13531pt>
 File: quark.png Graphic file (type png)
 <use quark.png>
@@ -1523,128 +1129,47 @@ pdfTeX warning (ext4): destination with the same identifier (name{fig:enter-labe
 <to be read again>
                    \relax
 l.731 \end{frame}
+                  [39
 
-Overfull \hbox (38.55957pt too wide) has occurred while \output is active
- [][]  \OT1/cmss/m/n/6 ([])
- []
+ <./quark.png>] [40
 
-[39
+] [41
 
- <./quark.png>]
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 743--743
- [][]  \OT1/cmss/m/n/6 ([])
- []
+] [42
 
-
-Overfull \hbox (38.55957pt too wide) has occurred while \output is active
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-[40
+] [43
 
 ]
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 760--760
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-
-Overfull \hbox (38.55957pt too wide) has occurred while \output is active
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-[41
-
-]
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 776--776
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-
-Overfull \hbox (38.55957pt too wide) has occurred while \output is active
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-[42
-
-]
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 795--795
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-
-Overfull \hbox (38.55957pt too wide) has occurred while \output is active
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-[43
-
-]
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 803--803
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
 <output1.png, id=1253, 409.7709pt x 327.3831pt>
 File: output1.png Graphic file (type png)
 <use output1.png>
 Package pdftex.def Info: output1.png  used on input line 803.
 (pdftex.def)             Requested size: 273.83728pt x 218.78604pt.
-
-Overfull \hbox (38.55957pt too wide) has occurred while \output is active
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-[44
+ [44
 
  <./output1.png>]
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 811--811
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
 <output2.png, id=1283, 409.7709pt x 327.3831pt>
 File: output2.png Graphic file (type png)
 <use output2.png>
 Package pdftex.def Info: output2.png  used on input line 811.
 (pdftex.def)             Requested size: 273.83728pt x 218.78604pt.
-
-Overfull \hbox (38.55957pt too wide) has occurred while \output is active
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-[45
+ [45
 
  <./output2.png>]
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 819--819
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
 <output3.png, id=1312, 416.2752pt x 327.3831pt>
 File: output3.png Graphic file (type png)
 <use output3.png>
 Package pdftex.def Info: output3.png  used on input line 819.
 (pdftex.def)             Requested size: 273.83728pt x 215.36914pt.
-
-Overfull \hbox (38.55957pt too wide) has occurred while \output is active
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-[46
+ [46
 
  <./output3.png>]
-Overfull \hbox (38.55957pt too wide) in paragraph at lines 827--827
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
 <output4.png, id=1340, 409.7709pt x 327.3831pt>
 File: output4.png Graphic file (type png)
 <use output4.png>
 Package pdftex.def Info: output4.png  used on input line 827.
 (pdftex.def)             Requested size: 273.83728pt x 218.78604pt.
-
-Overfull \hbox (38.55957pt too wide) has occurred while \output is active
- [][]  \OT1/cmss/m/n/6 ([])
- []
-
-[47
+ [47
 
  <./output4.png>]
 \tf@nav=\write8
@@ -1679,7 +1204,7 @@ Here is how much of TeX's memory you used:
  1141 hyphenation exceptions out of 8191
  128i,15n,123p,569b,1096s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <c:/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb><c:/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmitt10.pfb><c:/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb><c:/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb><c:/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb><c:/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmss10.pfb><c:/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmss12.pfb><c:/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmss8.pfb><c:/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmssi10.pfb><c:/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmssi12.pfb><c:/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmssi8.pfb><c:/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb><c:/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb><c:/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb><c:/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on main.pdf (47 pages, 502073 bytes).
+Output written on main.pdf (47 pages, 500075 bytes).
 PDF statistics:
  1458 PDF objects out of 1728 (max. 8388607)
  1278 compressed objects within 13 object streams
