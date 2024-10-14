@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) (preloaded format=pdflatex 2023.11.15)  14 OCT 2024 13:22
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) (preloaded format=pdflatex 2023.11.15)  14 OCT 2024 13:28
 entering extended mode
  \write18 enabled.
  file:line:error style messages enabled.
@@ -919,15 +919,15 @@ File: ot1mathkerncmss.fd 2020/01/31 Fontinst v1.933 font definitions for OT1/mat
 ] [3
 
 ]
-<harmonic_oscillator_numerical_propagator.png, id=108, 558.085pt x 417.56pt>
+<harmonic_oscillator_numerical_propagator.png, id=108, 416.2752pt x 314.3745pt>
 File: harmonic_oscillator_numerical_propagator.png Graphic file (type png)
 <use harmonic_oscillator_numerical_propagator.png>
 Package pdftex.def Info: harmonic_oscillator_numerical_propagator.png  used on input line 49.
-(pdftex.def)             Requested size: 171.14764pt x 128.05327pt.
+(pdftex.def)             Requested size: 171.14764pt x 129.25414pt.
  [4
 
  <./harmonic_oscillator_numerical_propagator.png>]
-<anharmonic_oscillator_numerical.png, id=138, 578.16pt x 433.62pt>
+<anharmonic_oscillator_numerical.png, id=140, 578.16pt x 433.62pt>
 File: anharmonic_oscillator_numerical.png Graphic file (type png)
 <use anharmonic_oscillator_numerical.png>
 Package pdftex.def Info: anharmonic_oscillator_numerical.png  used on input line 59.
@@ -962,7 +962,7 @@ LaTeX Font Info:    Font shape `OT1/cmtt/bx/n' in size <10.95> not available
 ] [11
 
 ]
-<harmonic_oscillator.png, id=337, 416.2752pt x 327.3831pt>
+<harmonic_oscillator.png, id=339, 416.2752pt x 327.3831pt>
 File: harmonic_oscillator.png Graphic file (type png)
 <use harmonic_oscillator.png>
 Package pdftex.def Info: harmonic_oscillator.png  used on input line 145.
@@ -970,7 +970,7 @@ Package pdftex.def Info: harmonic_oscillator.png  used on input line 145.
  [12
 
  <./harmonic_oscillator.png>]
-<anharmonic_oscillator_basic.png, id=369, 578.16pt x 454.69875pt>
+<anharmonic_oscillator_basic.png, id=370, 578.16pt x 454.69875pt>
 File: anharmonic_oscillator_basic.png Graphic file (type png)
 <use anharmonic_oscillator_basic.png>
 Package pdftex.def Info: anharmonic_oscillator_basic.png  used on input line 155.
@@ -978,7 +978,7 @@ Package pdftex.def Info: anharmonic_oscillator_basic.png  used on input line 155
  [13
 
  <./anharmonic_oscillator_basic.png>]
-<cubic_propagator.png, id=399, 416.2752pt x 328.8285pt>
+<cubic_propagator.png, id=400, 416.2752pt x 328.8285pt>
 File: cubic_propagator.png Graphic file (type png)
 <use cubic_propagator.png>
 Package pdftex.def Info: cubic_propagator.png  used on input line 165.
@@ -986,12 +986,12 @@ Package pdftex.def Info: cubic_propagator.png  used on input line 165.
  [14
 
  <./cubic_propagator.png>]
-<harmonic_oscillator_with_low_thermalization.png, id=429, 569.12625pt x 456.70625pt>
+<harmonic_oscillator_with_low_thermalization.png, id=430, 569.12625pt x 456.70625pt>
 File: harmonic_oscillator_with_low_thermalization.png Graphic file (type png)
 <use harmonic_oscillator_with_low_thermalization.png>
 Package pdftex.def Info: harmonic_oscillator_with_low_thermalization.png  used on input line 186.
 (pdftex.def)             Requested size: 136.91603pt x 109.86957pt.
-<harmonic_oscillator_with_low_thermalization_and_binning.png, id=430, 409.7709pt x 328.8285pt>
+<harmonic_oscillator_with_low_thermalization_and_binning.png, id=431, 409.7709pt x 328.8285pt>
 File: harmonic_oscillator_with_low_thermalization_and_binning.png Graphic file (type png)
 <use harmonic_oscillator_with_low_thermalization_and_binning.png>
 Package pdftex.def Info: harmonic_oscillator_with_low_thermalization_and_binning.png  used on input line 186.
@@ -1007,12 +1007,12 @@ Package pdftex.def Info: harmonic_oscillator_with_low_thermalization_and_binning
 ] [19
 
 ]
-<Harmonic_oscillator_with_improved_action.png, id=571, 578.16pt x 454.69875pt>
+<Harmonic_oscillator_with_improved_action.png, id=572, 578.16pt x 454.69875pt>
 File: Harmonic_oscillator_with_improved_action.png Graphic file (type png)
 <use Harmonic_oscillator_with_improved_action.png>
 Package pdftex.def Info: Harmonic_oscillator_with_improved_action.png  used on input line 244.
 (pdftex.def)             Requested size: 136.91603pt x 107.67291pt.
-<harmonic_oscillator_with_no_ghosts.png, id=572, 578.16pt x 454.69875pt>
+<harmonic_oscillator_with_no_ghosts.png, id=573, 578.16pt x 454.69875pt>
 File: harmonic_oscillator_with_no_ghosts.png Graphic file (type png)
 <use harmonic_oscillator_with_no_ghosts.png>
 Package pdftex.def Info: harmonic_oscillator_with_no_ghosts.png  used on input line 244.
@@ -1022,12 +1022,12 @@ Package pdftex.def Info: harmonic_oscillator_with_no_ghosts.png  used on input l
  <./Harmonic_oscillator_with_improved_action.png> <./harmonic_oscillator_with_no_ghosts.png>] [21
 
 ]
-<anharmonic_oscillator_with_improved_action.png, id=630, 578.16pt x 454.69875pt>
+<anharmonic_oscillator_with_improved_action.png, id=631, 578.16pt x 454.69875pt>
 File: anharmonic_oscillator_with_improved_action.png Graphic file (type png)
 <use anharmonic_oscillator_with_improved_action.png>
 Package pdftex.def Info: anharmonic_oscillator_with_improved_action.png  used on input line 275.
 (pdftex.def)             Requested size: 136.91603pt x 107.67291pt.
-<anharmonic_oscillator_with_no_ghosts.png, id=631, 569.12625pt x 454.69875pt>
+<anharmonic_oscillator_with_no_ghosts.png, id=632, 569.12625pt x 454.69875pt>
 File: anharmonic_oscillator_with_no_ghosts.png Graphic file (type png)
 <use anharmonic_oscillator_with_no_ghosts.png>
 Package pdftex.def Info: anharmonic_oscillator_with_no_ghosts.png  used on input line 275.
@@ -1041,7 +1041,7 @@ Package pdftex.def Info: anharmonic_oscillator_with_no_ghosts.png  used on input
 ] [25
 
 ]
-<anharmonic_oscillator_with_correct_z.png, id=744, 587.19376pt x 454.69875pt>
+<anharmonic_oscillator_with_correct_z.png, id=745, 587.19376pt x 454.69875pt>
 File: anharmonic_oscillator_with_correct_z.png Graphic file (type png)
 <use anharmonic_oscillator_with_correct_z.png>
 Package pdftex.def Info: anharmonic_oscillator_with_correct_z.png  used on input line 309.
@@ -1051,7 +1051,7 @@ Package pdftex.def Info: anharmonic_oscillator_with_correct_z.png  used on input
  <./anharmonic_oscillator_with_correct_z.png>] [27
 
 ]
-<lattice.png, id=800, 242.40562pt x 152.06813pt>
+<lattice.png, id=801, 242.40562pt x 152.06813pt>
 File: lattice.png Graphic file (type png)
 <use lattice.png>
 Package pdftex.def Info: lattice.png  used on input line 331.
@@ -1070,7 +1070,7 @@ Package pdftex.def Info: lattice.png  used on input line 331.
 \openout5 = `main.pyg'.
 
  (./_minted-main/8D48F968FFF3225377F962F82B5C285ACF33289265490CC72470AF6FAFE9A294.pygtex)
-<wilsonloop.png, id=860, 220.57407pt x 170.13562pt>
+<wilsonloop.png, id=861, 220.57407pt x 170.13562pt>
 File: wilsonloop.png Graphic file (type png)
 <use wilsonloop.png>
 Package pdftex.def Info: wilsonloop.png  used on input line 15.
@@ -1119,7 +1119,7 @@ l.712 \end{frame}
                   [38
 
 ]
-<quark.png, id=1114, 161.10187pt x 103.13531pt>
+<quark.png, id=1115, 161.10187pt x 103.13531pt>
 File: quark.png Graphic file (type png)
 <use quark.png>
 Package pdftex.def Info: quark.png  used on input line 731.
@@ -1140,7 +1140,7 @@ l.731 \end{frame}
 ] [43
 
 ]
-<output1.png, id=1253, 409.7709pt x 327.3831pt>
+<output1.png, id=1254, 409.7709pt x 327.3831pt>
 File: output1.png Graphic file (type png)
 <use output1.png>
 Package pdftex.def Info: output1.png  used on input line 803.
@@ -1148,7 +1148,7 @@ Package pdftex.def Info: output1.png  used on input line 803.
  [44
 
  <./output1.png>]
-<output2.png, id=1283, 409.7709pt x 327.3831pt>
+<output2.png, id=1284, 409.7709pt x 327.3831pt>
 File: output2.png Graphic file (type png)
 <use output2.png>
 Package pdftex.def Info: output2.png  used on input line 811.
@@ -1156,7 +1156,7 @@ Package pdftex.def Info: output2.png  used on input line 811.
  [45
 
  <./output2.png>]
-<output3.png, id=1312, 416.2752pt x 327.3831pt>
+<output3.png, id=1313, 416.2752pt x 327.3831pt>
 File: output3.png Graphic file (type png)
 <use output3.png>
 Package pdftex.def Info: output3.png  used on input line 819.
@@ -1164,7 +1164,7 @@ Package pdftex.def Info: output3.png  used on input line 819.
  [46
 
  <./output3.png>]
-<output4.png, id=1340, 409.7709pt x 327.3831pt>
+<output4.png, id=1341, 409.7709pt x 327.3831pt>
 File: output4.png Graphic file (type png)
 <use output4.png>
 Package pdftex.def Info: output4.png  used on input line 827.
@@ -1204,9 +1204,9 @@ Here is how much of TeX's memory you used:
  1141 hyphenation exceptions out of 8191
  128i,15n,123p,569b,1096s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <c:/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb><c:/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmitt10.pfb><c:/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb><c:/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb><c:/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb><c:/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmss10.pfb><c:/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmss12.pfb><c:/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmss8.pfb><c:/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmssi10.pfb><c:/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmssi12.pfb><c:/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmssi8.pfb><c:/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb><c:/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb><c:/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb><c:/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on main.pdf (47 pages, 500075 bytes).
+Output written on main.pdf (47 pages, 503660 bytes).
 PDF statistics:
- 1458 PDF objects out of 1728 (max. 8388607)
+ 1459 PDF objects out of 1728 (max. 8388607)
  1278 compressed objects within 13 object streams
  109 named destinations out of 1000 (max. 500000)
  144 words of extra memory for PDF output out of 10000 (max. 10000000)
